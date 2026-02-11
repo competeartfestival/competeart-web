@@ -1,0 +1,19 @@
+@config "../tailwind.config.js";
+
+@font-face {
+  font-family: "TAN Nimbus";
+  src: url("./assets/fonts/TANNimbus-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-offWhite font-secondary;
+  }
+}
