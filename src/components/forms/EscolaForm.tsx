@@ -143,8 +143,9 @@ export default function EscolaForm() {
       <span className="mt-6">Quantidade de coreografias: </span>
       <input
         name="limiteCoreografias"
-        type="number"
-        min={1}
+        type="text"
+        inputMode="numeric"
+        pattern="[0-9]*"
         placeholder="Quantidade de coreografias"
         value={formData.limiteCoreografias}
         onChange={handleChange}

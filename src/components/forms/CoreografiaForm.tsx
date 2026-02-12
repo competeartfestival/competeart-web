@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 type CoreografiaFormData = {
   nome: string;
   nomeCoreografo: string;
-  nivelTecnico: string;
   formacao: string;
   modalidade: string;
   categoria: string;
@@ -58,7 +57,6 @@ export default function CoreografiaForm({ escolaId }: Props) {
   const [formData, setFormData] = useState<CoreografiaFormData>({
     nome: "",
     nomeCoreografo: "",
-    nivelTecnico: "",
     formacao: "",
     modalidade: "",
     categoria: "",
@@ -191,19 +189,6 @@ export default function CoreografiaForm({ escolaId }: Props) {
         onChange={handleChange}
         className="px-4 py-3 rounded bg-zinc-900 text-white"
       />
-
-      <select
-        name="nivelTecnico"
-        value={formData.nivelTecnico}
-        onChange={handleChange}
-        className="px-4 py-3 rounded bg-zinc-900 text-white"
-      >
-        <option value="">Nível técnico</option>
-        <option value="INICIANTE">Iniciante</option>
-        <option value="AMADOR">Amador</option>
-        <option value="SEMI_PROFISSIONAL">Semi-profissional</option>
-        <option value="PROFISSIONAL">Profissional</option>
-      </select>
 
       <select
         name="formacao"
