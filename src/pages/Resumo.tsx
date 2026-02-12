@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { obterResumo } from "../lib/api";
 
 import { useNavigate } from "react-router-dom";
+
 export default function Resumo() {
   const { escolaId } = useParams();
   const [resumo, setResumo] = useState<any>(null);
