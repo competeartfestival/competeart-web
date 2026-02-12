@@ -1,5 +1,10 @@
-@config "../tailwind.config.js";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+/* =========================
+   Fonts
+========================= */
 @font-face {
   font-family: "TAN Nimbus";
   src: url("./assets/fonts/TANNimbus-Regular.woff2") format("woff2");
@@ -8,12 +13,15 @@
   font-display: swap;
 }
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
+/* =========================
+   Base styles
+========================= */
 @layer base {
   body {
-    @apply bg-background text-offWhite font-secondary;
+    margin: 0;
+    background-color: #000000;
+    color: #ffffff;
+    font-family: "Poppins", system-ui, sans-serif;
   }
 }
+
