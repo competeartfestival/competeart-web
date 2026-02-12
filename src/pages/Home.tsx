@@ -17,7 +17,7 @@ export default function Home() {
       -z-10
     "
       >
-        <source src="/assets/bg-video.mp4" type="video/mp4" />
+        <source src="/public/videos/bg-video.mp4" type="video/mp4" />
       </video>
 
       {/* Overlay */}
@@ -34,7 +34,7 @@ export default function Home() {
       <div className="relative z-10 flex min-h-screen items-center justify-center px-6">
         <div className="flex flex-col items-center text-center gap-6">
           <img
-            src="/assets/logo.png"
+            src="/public/assets/logo.png"
             alt="Compete'Art"
             className="w-48 md:w-56 lg:w-64 drop-shadow-lg"
           />
