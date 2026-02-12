@@ -1,26 +1,47 @@
 import { useNavigate } from "react-router-dom";
+import { useRef, useState } from "react";
+import { Volume2, VolumeX } from "lucide-react";
+
 export default function Home() {
   const navigate = useNavigate();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [muted, setMuted] = useState(true);
 
   return (
     <section className="relative min-h-screen overflow-hidden">
-      {/* Vídeo de background */}
+      <button
+        onClick={() => {
+          if (!videoRef.current) return;
+
+          videoRef.current.muted = !muted;
+          videoRef.current.volume = 0.4;
+          setMuted(!muted);
+        }}
+        className="
+    absolute top-5 left-5
+    z-20
+    p-3
+    rounded-full
+    bg-black/80
+    text-white
+    hover:bg-black/80
+    transition
+  "
+      >
+        {muted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+      </button>
+
       <video
+        ref={videoRef}
         autoPlay
-        muted
         loop
         playsInline
-        className="
-      absolute inset-0
-      w-full h-full
-      object-cover
-      -z-10
-    "
+        muted={muted}
+        className="absolute inset-0 w-full h-full object-cover -z-10"
       >
         <source src="/videos/bg-video.mp4" type="video/mp4" />
       </video>
 
-      {/* Overlay */}
       <div
         className="
       absolute inset-0
@@ -30,7 +51,6 @@ export default function Home() {
     "
       />
 
-      {/* Conteúdo */}
       <div className="relative z-10 flex min-h-screen items-center justify-center px-6">
         <div className="flex flex-col items-center text-center gap-6">
           <img
