@@ -1,4 +1,4 @@
-const API_URL = "https://competeart-api-production.up.railway.app/";
+const API_URL = "https://competeart-api-production.up.railway.app";
 
 export async function criarEscola(dados: any) {
   const response = await fetch(`${API_URL}/escolas`, {
