@@ -1,4 +1,4 @@
-const API_URL = "https://competeart-api-production.up.railway.app";
+const API_URL = import.meta.env.VITE_API_URL;
 
 export async function criarEscola(dados: any) {
   const response = await fetch(`${API_URL}/escolas`, {
@@ -69,6 +69,63 @@ export async function obterResumo(escolaId: string) {
 
   if (!response.ok) {
     throw new Error("Erro ao carregar resumo");
+  }
+
+  return response.json();
+}
+export async function listarEscolasAdmin() {
+  const token = localStorage.getItem("admin-token");
+
+  if (!token) {
+    throw new Error("NAO_AUTENTICADO");
+  }
+
+  const response = await fetch(
+    `${import.meta.env.VITE_API_URL}/admin/escolas`,
+    {
+      headers: {
+        "x-admin-key": token,
+      },
+    },
+  );
+  if (response.status === 401) {
+    localStorage.removeItem("admin-token");
+    window.location.href = "/admin/login";
+    return;
+  }
+
+  if (!response.ok) {
+    throw new Error("Erro ao carregar escolas");
+  }
+
+  return response.json();
+}
+export async function validarAdmin(token: string) {
+  const response = await fetch(
+    `${import.meta.env.VITE_API_URL}/admin/escolas`,
+    {
+      headers: {
+        "x-admin-key": token,
+      },
+    },
+  );
+
+  return response.ok;
+}
+export async function buscarEscolaAdmin(id: string) {
+  const token = localStorage.getItem("admin-token");
+
+  const response = await fetch(
+    `${import.meta.env.VITE_API_URL}/admin/escolas/${id}`,
+    {
+      headers: {
+        "x-admin-key": token || "",
+      },
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Erro ao carregar escola");
   }
 
   return response.json();

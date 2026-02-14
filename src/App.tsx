@@ -4,6 +4,8 @@ import Inscricao from "./pages/Inscricao";
 import Elenco from "./pages/Elenco";
 import Coreografias from "./pages/Coreografias";
 import Resumo from "./pages/Resumo";
+import Admin from "./pages/Admin";
+import AdminLogin from "./pages/AdminLogin";
 
 export default function App() {
   return (
@@ -17,6 +19,8 @@ export default function App() {
           element={<Coreografias />}
         />{" "}
         <Route path="/inscricao/:escolaId/resumo" element={<Resumo />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin" element={<Admin />} />
       </Routes>
     </BrowserRouter>
   );
