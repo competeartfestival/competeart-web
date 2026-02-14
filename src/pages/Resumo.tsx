@@ -22,6 +22,15 @@ export default function Resumo() {
     );
   }
   const faltam = resumo.escola.limiteCoreografias - resumo.totais.coreografias;
+  const href =
+    "https://wa.me/5511942410119?text=" +
+    encodeURIComponent(
+      "Olá, represento a escola " +
+        resumo.escola.nome +
+        " e gostaria de confirmar minha inscrição com o valor de R$" +
+        resumo.valores.total +
+        " no festival CompeteArt",
+    );
 
   return (
     <main className="min-h-screen bg-black text-white p-6 max-w-xl mx-auto">
@@ -47,10 +56,8 @@ export default function Resumo() {
         <ul className="flex flex-col gap-2">
           {resumo.detalhamento.coreografias.map((c: any) => (
             <li key={c.id} className="p-4 rounded bg-zinc-900">
-              <p className="font-medium">{c.nome}</p>
-              <p className="text-sm text-gray-400">
-                {c.formacao} · {c.lote}º lote
-              </p>
+              <p className="font-medium"> {c.nome}</p>
+              <p className="text-sm text-gray-400">{c.formacao}</p>
               <p className="text-orange-500 font-semibold">R$ {c.valor}</p>
             </li>
           ))}
@@ -67,12 +74,11 @@ export default function Resumo() {
       rounded-lg
       bg-orange-500
       text-black
-      font-medium
+      font-extralight
       hover:bg-orange-600
     "
           >
-            Adicionar nova coreografia ({faltam} restante{faltam > 1 ? "s" : ""}
-            )
+            Adicionar coreografia ({faltam} restante{faltam > 1 ? "s" : ""})
           </button>
         )}
       </section>
@@ -95,10 +101,33 @@ export default function Resumo() {
           <span className="text-orange-500">R$ {resumo.valores.total}</span>
         </div>
       </section>
+      <div>
+        <p className="text-sm text-gray-400">
+          O pagamento será realizado fora da plataforma. Confirme sua inscrição
+          abaixo pelo WhatsApp.
+        </p>
+      </div>
 
-      <p className="text-sm text-gray-400">
-        O pagamento será realizado fora da plataforma.
-      </p>
+      <div
+        className="
+      mt-6
+      w-full
+      px-6 py-3
+      rounded-lg
+      bg-orange-500
+      text-black
+      font-medium
+      hover:bg-orange-600
+      flex
+      justify-center
+    "
+      >
+        {" "}
+        <a className="font-extralight flex" href={href}>
+          <img className="w-auto h-5 mr-2" src="/assets/whatsapp.png" />
+          Confirmar minha inscrição
+        </a>
+      </div>
     </main>
   );
 }
