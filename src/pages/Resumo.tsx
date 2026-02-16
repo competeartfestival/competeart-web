@@ -29,7 +29,7 @@ export default function Resumo() {
         resumo.escola.nome +
         " e gostaria de confirmar minha inscrição com o valor de R$" +
         resumo.valores.total +
-        " no festival CompeteArt",
+        " no festival Compete’Art",
     );
 
   return (
