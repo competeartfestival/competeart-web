@@ -10,6 +10,7 @@ export default function ElencoIndependente() {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
   const [showInfoModal, setShowInfoModal] = useState(true);
+  const [isAdvancing, setIsAdvancing] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,6 +22,8 @@ export default function ElencoIndependente() {
   }, [independenteId]);
 
   function handleAvancar() {
+    if (isAdvancing) return;
+
     if (bailarinos.length === 0) {
       setToast(
         "Voce vai precisar de ao menos um bailarino para cadastrar uma coreografia.",
@@ -33,6 +36,7 @@ export default function ElencoIndependente() {
       return;
     }
 
+    setIsAdvancing(true);
     navigate(`/independentes/${independenteId}/coreografias`);
   }
 
@@ -109,9 +113,10 @@ export default function ElencoIndependente() {
 
       <button
         onClick={handleAvancar}
-        className="mt-10 px-6 py-3 w-full bg-orange-500 text-black font-medium hover:bg-orange-600"
+        disabled={isAdvancing}
+        className="mt-10 px-6 py-3 w-full bg-orange-500 text-black font-medium hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        Avancar para Coreografias
+        {isAdvancing ? "Avancando..." : "Avancar para Coreografias"}
       </button>
     </main>
   );

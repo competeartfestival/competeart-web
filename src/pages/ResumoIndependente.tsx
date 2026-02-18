@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 export default function ResumoIndependente() {
   const { independenteId } = useParams();
   const [resumo, setResumo] = useState<any>(null);
+  const [isAdvancing, setIsAdvancing] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -68,12 +70,17 @@ export default function ResumoIndependente() {
 
         {faltam > 0 && (
           <button
-            onClick={() =>
-              navigate(`/independentes/${resumo.independente.id}/coreografias`)
-            }
-            className="mt-6 w-full px-6 py-3 rounded-lg bg-orange-500 text-black font-extralight hover:bg-orange-600"
+            onClick={() => {
+              if (isAdvancing) return;
+              setIsAdvancing(true);
+              navigate(`/independentes/${resumo.independente.id}/coreografias`);
+            }}
+            disabled={isAdvancing}
+            className="mt-6 w-full px-6 py-3 rounded-lg bg-orange-500 text-black font-extralight hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Adicionar coreografia ({faltam} restante{faltam > 1 ? "s" : ""})
+            {isAdvancing
+              ? "Avancando..."
+              : `Adicionar coreografia (${faltam} restante${faltam > 1 ? "s" : ""})`}
           </button>
         )}
       </section>
@@ -99,12 +106,21 @@ export default function ResumoIndependente() {
         </p>
       </div>
 
-      <div className="mt-6 w-full px-6 py-3 rounded-lg bg-orange-500 text-black font-medium hover:bg-orange-600 flex justify-center">
-        <a className="font-extralight flex" href={href}>
+      <a
+        href={href}
+        onClick={() => setIsConfirming(true)}
+        className="mt-6 w-full px-6 py-3 rounded-lg bg-orange-500 text-black font-medium hover:bg-orange-600 flex justify-center items-center no-underline transition"
+        style={{
+          pointerEvents: isConfirming ? "none" : "auto",
+          opacity: isConfirming ? 0.6 : 1,
+          cursor: isConfirming ? "not-allowed" : "pointer",
+        }}
+      >
+        <span className="font-extralight flex">
           <img className="w-auto h-5 mr-2" src="/assets/whatsapp.png" />
-          Confirmar minha inscricao
-        </a>
-      </div>
+          {isConfirming ? "Concluindo..." : "Confirmar minha inscricao"}
+        </span>
+      </a>
     </main>
   );
 }

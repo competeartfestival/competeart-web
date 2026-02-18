@@ -32,6 +32,7 @@ export default function EscolaForm() {
   });
   const [erroGeral, setErroGeral] = useState<string | null>(null);
   const [errosCampo, setErrosCampo] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   function adicionarProfissional() {
     setErrosCampo((prev) => {
@@ -95,6 +96,8 @@ export default function EscolaForm() {
   }
 
   async function handleSubmit(e: React.FormEvent) {
+    if (isSubmitting) return;
+
     setErroGeral(null);
     setErrosCampo({});
 
@@ -143,6 +146,7 @@ export default function EscolaForm() {
     }
 
     try {
+      setIsSubmitting(true);
       const resultado = await criarEscola(formData);
       navigate(`/inscricao/${resultado.id}/elenco`);
     } catch (error: any) {
@@ -152,6 +156,8 @@ export default function EscolaForm() {
       }
 
       setErroGeral(error?.message || "Erro ao criar escola. Tente novamente.");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -292,6 +298,7 @@ export default function EscolaForm() {
 
       <button
         type="submit"
+        disabled={isSubmitting}
         className="
           mt-4
           px-6 py-3
@@ -300,9 +307,11 @@ export default function EscolaForm() {
           font-medium
           transition-colors
           hover:bg-orange-600
+          disabled:opacity-60
+          disabled:cursor-not-allowed
         "
       >
-        Avançar
+        {isSubmitting ? "Avançando..." : "Avançar"}
       </button>
     </form>
   );

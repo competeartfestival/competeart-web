@@ -19,6 +19,7 @@ export default function IndependenteForm() {
   });
   const [erroGeral, setErroGeral] = useState<string | null>(null);
   const [errosCampo, setErrosCampo] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   function formatarTelefone(valor: string) {
     const numeros = valor.replace(/\D/g, "").slice(0, 11);
@@ -44,6 +45,8 @@ export default function IndependenteForm() {
   }
 
   async function handleSubmit(e: React.FormEvent) {
+    if (isSubmitting) return;
+
     e.preventDefault();
     setErroGeral(null);
     setErrosCampo({});
@@ -72,10 +75,13 @@ export default function IndependenteForm() {
     }
 
     try {
+      setIsSubmitting(true);
       const resultado = await criarIndependente(formData);
       navigate(`/independentes/${resultado.id}/elenco`);
     } catch (error: any) {
       setErroGeral(error?.message || "Erro ao criar inscrição independente.");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -148,9 +154,10 @@ export default function IndependenteForm() {
 
       <button
         type="submit"
-        className="mt-4 px-6 py-3 bg-orange-500 text-black font-medium transition-colors hover:bg-orange-600"
+        disabled={isSubmitting}
+        className="mt-4 px-6 py-3 bg-orange-500 text-black font-medium transition-colors hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        Avancar
+        {isSubmitting ? "Avancando..." : "Avancar"}
       </button>
     </form>
   );

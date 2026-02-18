@@ -77,6 +77,7 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Props) {
   const [selecionados, setSelecionados] = useState<string[]>([]);
   const [errors, setErrors] = useState<FormErrors>({});
   const [erroForm, setErroForm] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const carregar =
@@ -208,6 +209,8 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Props) {
   }
 
   async function handleSubmit(e: React.FormEvent) {
+    if (isSubmitting) return;
+
     e.preventDefault();
     setErroForm(null);
 
@@ -233,6 +236,7 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Props) {
     }
 
     try {
+      setIsSubmitting(true);
       const lote = obterLoteAtual();
       const valor = calcularValorCoreografia(formData.formacao, selecionados.length);
 
@@ -253,6 +257,8 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Props) {
       }
     } catch (error: any) {
       setErroForm(error?.message || "Erro ao salvar coreografia.");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -403,9 +409,10 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Props) {
 
       <button
         type="submit"
-        className="mt-4 px-6 py-3 rounded-lg bg-orange-500 text-black font-medium hover:bg-orange-600"
+        disabled={isSubmitting}
+        className="mt-4 px-6 py-3 rounded-lg bg-orange-500 text-black font-medium hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        Salvar Coreografia
+        {isSubmitting ? "Concluindo..." : "Salvar Coreografia"}
       </button>
     </form>
   );

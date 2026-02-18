@@ -9,6 +9,7 @@ export default function Elenco() {
   const [bailarinos, setBailarinos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
+  const [isAdvancing, setIsAdvancing] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,6 +21,8 @@ export default function Elenco() {
   }, [escolaId]);
 
   function handleAvancar() {
+    if (isAdvancing) return;
+
     if (bailarinos.length === 0) {
       setToast(
         "Você vai precisar de ao menos um bailarino para cadastrar uma coreografia.",
@@ -32,6 +35,7 @@ export default function Elenco() {
       return;
     }
 
+    setIsAdvancing(true);
     navigate(`/inscricao/${escolaId}/coreografias`);
   }
 
@@ -82,6 +86,7 @@ export default function Elenco() {
 
       <button
         onClick={handleAvancar}
+        disabled={isAdvancing}
         className="
           mt-10
           px-6 py-3
@@ -90,9 +95,11 @@ export default function Elenco() {
           text-black
           font-medium
           hover:bg-orange-600
+          disabled:opacity-60
+          disabled:cursor-not-allowed
         "
       >
-        Avançar para Coreografias
+        {isAdvancing ? "Avançando..." : "Avançar para Coreografias"}
       </button>
     </main>
   );

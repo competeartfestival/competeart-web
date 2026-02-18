@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 export default function Resumo() {
   const { escolaId } = useParams();
   const [resumo, setResumo] = useState<any>(null);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [isAdvancing, setIsAdvancing] = useState(false);
   const navigate = useNavigate();
   useEffect(() => {
     if (escolaId) {
@@ -64,9 +66,12 @@ export default function Resumo() {
         </ul>
         {faltam > 0 && (
           <button
-            onClick={() =>
-              navigate(`/inscricao/${resumo.escola.id}/coreografias`)
-            }
+            onClick={() => {
+              if (isAdvancing) return;
+              setIsAdvancing(true);
+              navigate(`/inscricao/${resumo.escola.id}/coreografias`);
+            }}
+            disabled={isAdvancing}
             className="
       mt-6
       w-full
@@ -76,9 +81,13 @@ export default function Resumo() {
       text-black
       font-extralight
       hover:bg-orange-600
+      disabled:opacity-60
+      disabled:cursor-not-allowed
     "
           >
-            Adicionar coreografia ({faltam} restante{faltam > 1 ? "s" : ""})
+            {isAdvancing
+              ? "Avançando..."
+              : `Adicionar coreografia (${faltam} restante${faltam > 1 ? "s" : ""})`}
           </button>
         )}
       </section>
@@ -108,7 +117,9 @@ export default function Resumo() {
         </p>
       </div>
 
-      <div
+      <a
+        href={href}
+        onClick={() => setIsConfirming(true)}
         className="
       mt-6
       w-full
@@ -120,14 +131,21 @@ export default function Resumo() {
       hover:bg-orange-600
       flex
       justify-center
+      items-center
+      no-underline
+      transition
     "
+        style={{
+          pointerEvents: isConfirming ? "none" : "auto",
+          opacity: isConfirming ? 0.6 : 1,
+          cursor: isConfirming ? "not-allowed" : "pointer",
+        }}
       >
-        {" "}
-        <a className="font-extralight flex" href={href}>
+        <span className="font-extralight flex">
           <img className="w-auto h-5 mr-2" src="/assets/whatsapp.png" />
-          Confirmar minha inscrição
-        </a>
-      </div>
+          {isConfirming ? "Concluindo..." : "Confirmar minha inscrição"}
+        </span>
+      </a>
     </main>
   );
 }
