@@ -300,10 +300,6 @@ export default function EscolaForm() {
           font-medium
           transition-colors
           hover:bg-orange-600
-          w-full
-          fixed
-          bottom-0
-          left-0
         "
       >
         Avançar
