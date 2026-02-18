@@ -221,7 +221,7 @@ export default function Admin() {
                         </p>
                       </div>
 
-                      <div className="mt-6">
+                      {/* <div className="mt-6">
                         <h4 className="font-secondary mb-3">Bailarinos</h4>
 
                         <div className="flex flex-col gap-2">
@@ -236,7 +236,7 @@ export default function Admin() {
                             ),
                           )}
                         </div>
-                      </div>
+                      </div> */}
 
                       <div className="mt-6 text-right">
                         <p className="text-orange-500 font-bold text-2xl">

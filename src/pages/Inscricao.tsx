@@ -12,7 +12,7 @@ export default function Inscricao() {
         ← Voltar
       </button>
 
-      <h1 className="font-primary text-2xl text-orange-500 mb-6 text-center">
+      <h1 className="font-primary text-2xl text-orange-500 mb-6 text-left">
         Cadastro da Escola
       </h1>
 

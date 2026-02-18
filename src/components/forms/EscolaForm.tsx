@@ -158,7 +158,7 @@ export default function EscolaForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-4 max-w-md mx-auto"
+      className="flex flex-col gap-4 max-w-md mx-auto mb-12I"
     >
       {erroGeral && (
         <div className="p-3 rounded-md bg-red-500/10 text-red-400 text-sm">
@@ -240,10 +240,8 @@ export default function EscolaForm() {
       />
 
       <div
-        className={`
-    mt-6 flex flex-col gap-4
-    ${errosCampo.profissionais ? "border border-red-500 rounded-md p-4" : ""}
-  `}
+        className="
+    mt-6 flex flex-col gap-4"
       >
         <h3 className="font-secondary font-semibold">Profissionais</h3>
         {errosCampo.profissionais && (
@@ -297,12 +295,15 @@ export default function EscolaForm() {
         className="
           mt-4
           px-6 py-3
-          rounded-lg
           bg-orange-500
           text-black
           font-medium
           transition-colors
           hover:bg-orange-600
+          w-full
+          fixed
+          bottom-0
+          left-0
         "
       >
         Avançar
