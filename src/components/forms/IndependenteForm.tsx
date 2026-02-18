@@ -157,7 +157,7 @@ export default function IndependenteForm() {
         disabled={isSubmitting}
         className="mt-4 px-6 py-3 bg-orange-500 text-black font-medium transition-colors hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        {isSubmitting ? "Avancando..." : "Avancar"}
+        {isSubmitting ? "Carregando..." : "Avançar"}
       </button>
     </form>
   );

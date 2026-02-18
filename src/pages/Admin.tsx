@@ -204,7 +204,7 @@ export default function Admin() {
 
                       <div className="text-sm text-gray-300 space-y-2">
                         <p>
-                          <span className="text-gray-500">Formacao:</span>{" "}
+                          <span className="text-gray-500">Formação:</span>{" "}
                           {coreografiaSelecionada.formacao}
                         </p>
                         <p>
@@ -216,11 +216,11 @@ export default function Admin() {
                           {coreografiaSelecionada.categoria}
                         </p>
                         <p>
-                          <span className="text-gray-500">Duracao:</span>{" "}
+                          <span className="text-gray-500">Duração:</span>{" "}
                           {coreografiaSelecionada.duracao}
                         </p>
                         <p>
-                          <span className="text-gray-500">Musica:</span>{" "}
+                          <span className="text-gray-500">Música:</span>{" "}
                           {coreografiaSelecionada.musica}
                         </p>
                         <p>

@@ -30,9 +30,9 @@ export default function ResumoIndependente() {
   const href =
     "https://wa.me/5511942410119?text=" +
     encodeURIComponent(
-      "Ola, represento a inscricao independente de " +
+      "Ola, represento a inscrição independente de " +
         resumo.independente.nomeResponsavel +
-        " e gostaria de confirmar minha inscricao com o valor de R$" +
+        " e gostaria de confirmar minha inscrição com o valor de R$" +
         resumo.valores.total +
         " no festival Compete'Art",
     );
@@ -47,7 +47,7 @@ export default function ResumoIndependente() {
       </button>
 
       <h1 className="text-3xl font-primary text-orange-500 mb-6">
-        Resumo da Inscricao
+        Resumo da Inscrição
       </h1>
 
       <section className="mb-6">
@@ -101,7 +101,7 @@ export default function ResumoIndependente() {
 
       <div>
         <p className="text-sm text-gray-400">
-          O pagamento sera realizado fora da plataforma. Confirme sua inscricao
+          O pagamento sera realizado fora da plataforma. Confirme sua inscrição
           abaixo pelo WhatsApp.
         </p>
       </div>
@@ -118,7 +118,7 @@ export default function ResumoIndependente() {
       >
         <span className="font-extralight flex">
           <img className="w-auto h-5 mr-2" src="/assets/whatsapp.png" />
-          {isConfirming ? "Concluindo..." : "Confirmar minha inscricao"}
+          {isConfirming ? "Concluindo..." : "Confirmar minha inscrição"}
         </span>
       </a>
     </main>

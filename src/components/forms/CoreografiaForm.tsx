@@ -185,7 +185,8 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Props) {
   function validarFormulario(): boolean {
     const novosErros: FormErrors = {};
 
-    if (!formData.nome.trim()) novosErros.nome = "Informe o nome da coreografia.";
+    if (!formData.nome.trim())
+      novosErros.nome = "Informe o nome da coreografia.";
 
     if (!formData.nomeCoreografo.trim()) {
       novosErros.nomeCoreografo = "Informe o nome do coreografo.";
@@ -199,9 +200,11 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Props) {
 
     if (!formData.duracao) novosErros.duracao = "Informe a duracao.";
 
-    if (!formData.musica.trim()) novosErros.musica = "Informe o nome da musica.";
+    if (!formData.musica.trim())
+      novosErros.musica = "Informe o nome da musica.";
 
-    if (selecionados.length === 0) setErroForm("Selecione ao menos um bailarino.");
+    if (selecionados.length === 0)
+      setErroForm("Selecione ao menos um bailarino.");
 
     setErrors(novosErros);
 
@@ -238,7 +241,10 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Props) {
     try {
       setIsSubmitting(true);
       const lote = obterLoteAtual();
-      const valor = calcularValorCoreografia(formData.formacao, selecionados.length);
+      const valor = calcularValorCoreografia(
+        formData.formacao,
+        selecionados.length,
+      );
 
       const payload = {
         ...formData,
@@ -270,7 +276,9 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Props) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-md">
       {erroForm && (
-        <div className="p-3 rounded bg-red-500/10 text-red-400 text-sm">{erroForm}</div>
+        <div className="p-3 rounded bg-red-500/10 text-red-400 text-sm">
+          {erroForm}
+        </div>
       )}
 
       <input
@@ -299,17 +307,21 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Props) {
         onChange={handleChange}
         className="px-4 py-3 rounded bg-zinc-900 text-white"
       >
-        <option value="">Formacao</option>
+        <option value="">Formação</option>
         <option value="SOLO">Solo</option>
         <option value="DUO">Duo</option>
         <option value="TRIO">Trio</option>
         <option value="GRUPO">Grupo</option>
       </select>
-      {errors.formacao && <p className="text-xs text-red-400">{errors.formacao}</p>}
+      {errors.formacao && (
+        <p className="text-xs text-red-400">{errors.formacao}</p>
+      )}
 
       {formData.formacao && (
         <div className="mt-6">
-          <h3 className="font-secondary font-semibold mb-3">Selecionar bailarinos</h3>
+          <h3 className="font-secondary font-semibold mb-3">
+            Selecionar bailarinos
+          </h3>
 
           <ul className="flex flex-col gap-2">
             {bailarinos.map((b) => (
@@ -330,7 +342,9 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Props) {
             ))}
           </ul>
 
-          <p className="text-sm text-gray-400 mt-2">Selecionados: {selecionados.length}</p>
+          <p className="text-sm text-gray-400 mt-2">
+            Selecionados: {selecionados.length}
+          </p>
         </div>
       )}
 
@@ -371,13 +385,18 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Props) {
 
       <input
         name="duracao"
-        placeholder="Duracao (MM:SS)"
+        placeholder="Duração (MM:SS)"
         value={formData.duracao}
         onChange={(e) => handleDuracaoChange(e.target.value)}
         maxLength={5}
         className="px-4 py-3 rounded bg-zinc-900 text-white"
       />
-      {errors.duracao && <p className="text-xs text-red-400">{errors.duracao}</p>}
+      <label className="text-xs text-gray-400">
+        Consulte o regulamento para limites de duração.
+      </label>
+      {errors.duracao && (
+        <p className="text-xs text-red-400">{errors.duracao}</p>
+      )}
 
       <input
         name="musica"
@@ -398,12 +417,16 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Props) {
         Tem cenario?
       </label>
 
-      <p className="text-sm text-gray-400">Lote atual: {obterLoteAtual()}o lote</p>
+      <p className="text-sm text-gray-400">
+        Lote atual: {obterLoteAtual()}º lote
+      </p>
 
       {valorCoreografia > 0 && (
         <div className="mt-4 p-4 rounded bg-zinc-900">
           <p className="text-sm text-gray-300">Valor da coreografia</p>
-          <p className="text-2xl font-bold text-orange-500">R$ {valorCoreografia}</p>
+          <p className="text-2xl font-bold text-orange-500">
+            R$ {valorCoreografia}
+          </p>
         </div>
       )}
 

@@ -56,9 +56,9 @@ export default function ElencoIndependente() {
               Antes de continuar
             </h2>
             <p className="text-sm text-gray-300 leading-relaxed">
-              Nesta etapa, cadastre todos os bailarinos que vao participar das
-              coreografias. Se a apresentacao for solo, cadastre apenas voce.
-              Se houver mais participantes, cadastre cada um deles tambem.
+              Nesta etapa, cadastre todos os bailarinos que vão participar das
+              coreografias. Se a apresentação for solo, cadastre apenas você. Se
+              houver mais participantes, cadastre cada um deles também.
             </p>
 
             <button
@@ -116,7 +116,7 @@ export default function ElencoIndependente() {
         disabled={isAdvancing}
         className="mt-10 px-6 py-3 w-full bg-orange-500 text-black font-medium hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        {isAdvancing ? "Avancando..." : "Avancar para Coreografias"}
+        {isAdvancing ? "Carregando..." : "Avançar para Coreografias"}
       </button>
     </main>
   );
