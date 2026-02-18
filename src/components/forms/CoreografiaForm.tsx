@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
-import { listarBailarinos, criarCoreografia } from "../../lib/api";
+import {
+  listarBailarinos,
+  criarCoreografia,
+  listarBailarinosIndependente,
+  criarCoreografiaIndependente,
+} from "../../lib/api";
 import { useNavigate } from "react-router-dom";
 
 type CoreografiaFormData = {
@@ -16,7 +21,8 @@ type CoreografiaFormData = {
 type FormErrors = Partial<Record<keyof CoreografiaFormData, string>>;
 
 type Props = {
-  escolaId: string;
+  inscricaoId: string;
+  tipoInscricao: "escola" | "independente";
 };
 
 function obterLoteAtual(): 1 | 2 | 3 {
@@ -53,7 +59,7 @@ function calcularValorCoreografia(
   return tabela[formacao][lote - 1];
 }
 
-export default function CoreografiaForm({ escolaId }: Props) {
+export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Props) {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState<CoreografiaFormData>({
@@ -73,8 +79,13 @@ export default function CoreografiaForm({ escolaId }: Props) {
   const [erroForm, setErroForm] = useState<string | null>(null);
 
   useEffect(() => {
-    listarBailarinos(escolaId).then(setBailarinos);
-  }, [escolaId]);
+    const carregar =
+      tipoInscricao === "escola"
+        ? listarBailarinos(inscricaoId)
+        : listarBailarinosIndependente(inscricaoId);
+
+    carregar.then(setBailarinos);
+  }, [inscricaoId, tipoInscricao]);
 
   function limitePorFormacao(formacao: string) {
     switch (formacao) {
@@ -129,7 +140,7 @@ export default function CoreografiaForm({ escolaId }: Props) {
   }
 
   function handleDuracaoChange(valor: string) {
-    let numeros = valor.replace(/\D/g, "").slice(0, 4);
+    const numeros = valor.replace(/\D/g, "").slice(0, 4);
 
     if (numeros.length <= 2) {
       setFormData((prev) => ({ ...prev, duracao: numeros }));
@@ -173,25 +184,23 @@ export default function CoreografiaForm({ escolaId }: Props) {
   function validarFormulario(): boolean {
     const novosErros: FormErrors = {};
 
-    if (!formData.nome.trim())
-      novosErros.nome = "Informe o nome da coreografia.";
+    if (!formData.nome.trim()) novosErros.nome = "Informe o nome da coreografia.";
 
-    if (!formData.nomeCoreografo.trim())
-      novosErros.nomeCoreografo = "Informe o nome do coreógrafo.";
+    if (!formData.nomeCoreografo.trim()) {
+      novosErros.nomeCoreografo = "Informe o nome do coreografo.";
+    }
 
-    if (!formData.formacao) novosErros.formacao = "Selecione a formação.";
+    if (!formData.formacao) novosErros.formacao = "Selecione a formacao.";
 
     if (!formData.modalidade) novosErros.modalidade = "Selecione a modalidade.";
 
     if (!formData.categoria) novosErros.categoria = "Selecione a categoria.";
 
-    if (!formData.duracao) novosErros.duracao = "Informe a duração.";
+    if (!formData.duracao) novosErros.duracao = "Informe a duracao.";
 
-    if (!formData.musica.trim())
-      novosErros.musica = "Informe o nome da música.";
+    if (!formData.musica.trim()) novosErros.musica = "Informe o nome da musica.";
 
-    if (selecionados.length === 0)
-      setErroForm("Selecione ao menos um bailarino.");
+    if (selecionados.length === 0) setErroForm("Selecione ao menos um bailarino.");
 
     setErrors(novosErros);
 
@@ -210,7 +219,7 @@ export default function CoreografiaForm({ escolaId }: Props) {
     if (duracaoSeg === 0) {
       setErrors((prev) => ({
         ...prev,
-        duracao: "Formato inválido. Use MM:SS.",
+        duracao: "Formato invalido. Use MM:SS.",
       }));
       return;
     }
@@ -218,27 +227,30 @@ export default function CoreografiaForm({ escolaId }: Props) {
     if (duracaoSeg > limite) {
       setErrors((prev) => ({
         ...prev,
-        duracao: "Duração excede o limite permitido.",
+        duracao: "Duracao excede o limite permitido.",
       }));
       return;
     }
 
     try {
       const lote = obterLoteAtual();
-      const valor = calcularValorCoreografia(
-        formData.formacao,
-        selecionados.length,
-      );
+      const valor = calcularValorCoreografia(formData.formacao, selecionados.length);
 
-      await criarCoreografia(escolaId, {
+      const payload = {
         ...formData,
         duracao: converterParaFormatoBackend(formData.duracao),
         bailarinosIds: selecionados,
         lote,
         valor,
-      });
+      };
 
-      navigate(`/inscricao/${escolaId}/resumo`);
+      if (tipoInscricao === "escola") {
+        await criarCoreografia(inscricaoId, payload);
+        navigate(`/inscricao/${inscricaoId}/resumo`);
+      } else {
+        await criarCoreografiaIndependente(inscricaoId, payload);
+        navigate(`/independentes/${inscricaoId}/resumo`);
+      }
     } catch (error: any) {
       setErroForm(error?.message || "Erro ao salvar coreografia.");
     }
@@ -252,9 +264,7 @@ export default function CoreografiaForm({ escolaId }: Props) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-md">
       {erroForm && (
-        <div className="p-3 rounded bg-red-500/10 text-red-400 text-sm">
-          {erroForm}
-        </div>
+        <div className="p-3 rounded bg-red-500/10 text-red-400 text-sm">{erroForm}</div>
       )}
 
       <input
@@ -268,7 +278,7 @@ export default function CoreografiaForm({ escolaId }: Props) {
 
       <input
         name="nomeCoreografo"
-        placeholder="Nome do coreógrafo"
+        placeholder="Nome do coreografo"
         value={formData.nomeCoreografo}
         onChange={handleChange}
         className="px-4 py-3 rounded bg-zinc-900 text-white"
@@ -283,21 +293,17 @@ export default function CoreografiaForm({ escolaId }: Props) {
         onChange={handleChange}
         className="px-4 py-3 rounded bg-zinc-900 text-white"
       >
-        <option value="">Formação</option>
+        <option value="">Formacao</option>
         <option value="SOLO">Solo</option>
         <option value="DUO">Duo</option>
         <option value="TRIO">Trio</option>
         <option value="GRUPO">Grupo</option>
       </select>
-      {errors.formacao && (
-        <p className="text-xs text-red-400">{errors.formacao}</p>
-      )}
+      {errors.formacao && <p className="text-xs text-red-400">{errors.formacao}</p>}
 
       {formData.formacao && (
         <div className="mt-6">
-          <h3 className="font-secondary font-semibold mb-3">
-            Selecionar bailarinos
-          </h3>
+          <h3 className="font-secondary font-semibold mb-3">Selecionar bailarinos</h3>
 
           <ul className="flex flex-col gap-2">
             {bailarinos.map((b) => (
@@ -318,9 +324,7 @@ export default function CoreografiaForm({ escolaId }: Props) {
             ))}
           </ul>
 
-          <p className="text-sm text-gray-400 mt-2">
-            Selecionados: {selecionados.length}
-          </p>
+          <p className="text-sm text-gray-400 mt-2">Selecionados: {selecionados.length}</p>
         </div>
       )}
 
@@ -331,11 +335,11 @@ export default function CoreografiaForm({ escolaId }: Props) {
         className="px-4 py-3 rounded bg-zinc-900 text-white"
       >
         <option value="">Modalidade</option>
-        <option value="BALLET_CLASSICO">Ballet Clássico</option>
-        <option value="BALLET_NEOCLASSICO">Ballet Neoclássico</option>
+        <option value="BALLET_CLASSICO">Ballet Classico</option>
+        <option value="BALLET_NEOCLASSICO">Ballet Neoclassico</option>
         <option value="JAZZ">Jazz</option>
-        <option value="CONTEMPORANEO">Contemporâneo</option>
-        <option value="DANCAS_URBANAS">Danças Urbanas</option>
+        <option value="CONTEMPORANEO">Contemporaneo</option>
+        <option value="DANCAS_URBANAS">Dancas Urbanas</option>
         <option value="SAPATEADO">Sapateado</option>
         <option value="ESTILO_LIVRE">Estilo Livre</option>
         <option value="OUTROS">Outros</option>
@@ -355,30 +359,29 @@ export default function CoreografiaForm({ escolaId }: Props) {
         <option value="JUVENIL_II">Juvenil II</option>
         <option value="ADULTO">Adulto</option>
         <option value="ADULTO_INICIANTE">Adulto Iniciante</option>
-        <option value="SENIOR">Sênior</option>
+        <option value="SENIOR">Senior</option>
         <option value="MASTER">Master</option>
       </select>
 
       <input
         name="duracao"
-        placeholder="Duração (MM:SS)"
+        placeholder="Duracao (MM:SS)"
         value={formData.duracao}
         onChange={(e) => handleDuracaoChange(e.target.value)}
         maxLength={5}
         className="px-4 py-3 rounded bg-zinc-900 text-white"
       />
-      {errors.duracao && (
-        <p className="text-xs text-red-400">{errors.duracao}</p>
-      )}
+      {errors.duracao && <p className="text-xs text-red-400">{errors.duracao}</p>}
 
       <input
         name="musica"
-        placeholder="Música"
+        placeholder="Musica"
         value={formData.musica}
         onChange={handleChange}
         className="px-4 py-3 rounded bg-zinc-900 text-white"
       />
       {errors.musica && <p className="text-xs text-red-400">{errors.musica}</p>}
+
       <label className="flex items-center gap-2 text-sm">
         <input
           type="checkbox"
@@ -386,23 +389,15 @@ export default function CoreografiaForm({ escolaId }: Props) {
           checked={formData.temCenario}
           onChange={handleChange}
         />
-        Tem cenário?
+        Tem cenario?
       </label>
 
-      {obterLoteAtual() ? (
-        <p className="text-sm text-gray-400">
-          Lote atual: {obterLoteAtual()}º lote
-        </p>
-      ) : (
-        <p className="text-sm text-red-400">Inscrições fora do período</p>
-      )}
+      <p className="text-sm text-gray-400">Lote atual: {obterLoteAtual()}o lote</p>
 
       {valorCoreografia > 0 && (
         <div className="mt-4 p-4 rounded bg-zinc-900">
           <p className="text-sm text-gray-300">Valor da coreografia</p>
-          <p className="text-2xl font-bold text-orange-500">
-            R$ {valorCoreografia}
-          </p>
+          <p className="text-2xl font-bold text-orange-500">R$ {valorCoreografia}</p>
         </div>
       )}
 

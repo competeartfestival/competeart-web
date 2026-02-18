@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { criarBailarino } from "../../lib/api";
+import { criarBailarino, criarBailarinoIndependente } from "../../lib/api";
 
 type BailarinoFormData = {
   nomeCompleto: string;
@@ -9,11 +9,16 @@ type BailarinoFormData = {
 };
 
 type Props = {
-  escolaId: string;
+  inscricaoId: string;
+  tipoInscricao: "escola" | "independente";
   onNovoBailarino: (bailarino: any) => void;
 };
 
-export default function BailarinoForm({ escolaId, onNovoBailarino }: Props) {
+export default function BailarinoForm({
+  inscricaoId,
+  tipoInscricao,
+  onNovoBailarino,
+}: Props) {
   const [formData, setFormData] = useState<BailarinoFormData>({
     nomeCompleto: "",
     nomeArtistico: "",
@@ -28,10 +33,12 @@ export default function BailarinoForm({ escolaId, onNovoBailarino }: Props) {
     const numeros = valor.replace(/\D/g, "").slice(0, 11);
 
     if (numeros.length <= 3) return numeros;
-    if (numeros.length <= 6)
+    if (numeros.length <= 6) {
       return `${numeros.slice(0, 3)}.${numeros.slice(3)}`;
-    if (numeros.length <= 9)
+    }
+    if (numeros.length <= 9) {
       return `${numeros.slice(0, 3)}.${numeros.slice(3, 6)}.${numeros.slice(6)}`;
+    }
 
     return `${numeros.slice(0, 3)}.${numeros.slice(3, 6)}.${numeros.slice(6, 9)}-${numeros.slice(9)}`;
   }
@@ -73,7 +80,7 @@ export default function BailarinoForm({ escolaId, onNovoBailarino }: Props) {
     if (!formData.cpf.trim()) {
       novosErros.cpf = "Informe o CPF.";
     } else if (cpfSemMascara.length !== 11) {
-      novosErros.cpf = "CPF inválido.";
+      novosErros.cpf = "CPF invalido.";
     }
 
     if (!formData.dataNascimento) {
@@ -86,10 +93,15 @@ export default function BailarinoForm({ escolaId, onNovoBailarino }: Props) {
     }
 
     try {
-      const resultado = await criarBailarino(escolaId, {
+      const payload = {
         ...formData,
         cpf: cpfSemMascara,
-      });
+      };
+
+      const resultado =
+        tipoInscricao === "escola"
+          ? await criarBailarino(inscricaoId, payload)
+          : await criarBailarinoIndependente(inscricaoId, payload);
 
       onNovoBailarino({
         id: resultado.id,
@@ -102,12 +114,7 @@ export default function BailarinoForm({ escolaId, onNovoBailarino }: Props) {
         cpf: "",
         dataNascimento: "",
       });
-    } catch (error: any) {
-      if (error?.field) {
-        setErrosCampo({ [error.field]: error.message });
-        return;
-      }
-
+    } catch {
       setErroGeral("Erro ao cadastrar bailarino. Tente novamente.");
     }
   }
@@ -136,7 +143,7 @@ export default function BailarinoForm({ escolaId, onNovoBailarino }: Props) {
         <input
           name="nomeArtistico"
           type="text"
-          placeholder="Nome artístico"
+          placeholder="Nome artistico"
           value={formData.nomeArtistico}
           onChange={handleChange}
           className="px-4 py-3 rounded-md bg-zinc-900 text-white focus:outline-none"
@@ -144,6 +151,7 @@ export default function BailarinoForm({ escolaId, onNovoBailarino }: Props) {
         {errosCampo.nomeArtistico && (
           <p className="text-sm text-red-400">{errosCampo.nomeArtistico}</p>
         )}
+
         <input
           name="cpf"
           type="text"
@@ -152,9 +160,7 @@ export default function BailarinoForm({ escolaId, onNovoBailarino }: Props) {
           onChange={handleChange}
           className="px-4 py-3 rounded-md bg-zinc-900 text-white focus:outline-none"
         />
-        {errosCampo.cpf && (
-          <p className="text-sm text-red-400">{errosCampo.cpf}</p>
-        )}
+        {errosCampo.cpf && <p className="text-sm text-red-400">{errosCampo.cpf}</p>}
 
         <div className="flex flex-col gap-1">
           <label className="text-sm text-gray-400">Data de nascimento</label>
@@ -172,19 +178,7 @@ export default function BailarinoForm({ escolaId, onNovoBailarino }: Props) {
 
         <button
           type="submit"
-          className="
-          mt-4
-          px-6 py-3
-          border-2
-          border-solid
-          rounded-lg
-          border-orange-500
-          bg-transparent
-          text-orange-500
-          font-medium
-          hover:bg-orange-500
-          hover:text-black
-        "
+          className="mt-4 px-6 py-3 border-2 border-solid rounded-lg border-orange-500 bg-transparent text-orange-500 font-medium hover:bg-orange-500 hover:text-black"
         >
           Salvar bailarino
         </button>

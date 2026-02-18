@@ -60,8 +60,8 @@ export default function Home() {
           />
 
           <p className="font-secondary text-base text-gray-300 max-w-md leading-relaxed">
-            Inscrições abertas para escolas e grupos de dança. Uma celebração de
-            arte, movimento e performance.
+            Inscrições abertas para escolas e bailarinos independentes. Uma
+            celebração de arte, movimento e performance.
           </p>
 
           <button
@@ -77,7 +77,7 @@ export default function Home() {
           transition
         "
           >
-            Inscrever minha escola
+            Começar
           </button>
         </div>
       </div>

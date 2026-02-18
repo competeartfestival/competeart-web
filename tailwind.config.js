@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        primary: ["TAN Nimbus", "serif"],
+        primary: ["Poppins", "serif"],
         secondary: ["Poppins", "sans-serif"],
       },
     },

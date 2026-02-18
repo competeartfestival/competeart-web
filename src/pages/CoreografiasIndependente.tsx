@@ -1,11 +1,11 @@
 import { useParams, useNavigate } from "react-router-dom";
 import CoreografiaForm from "../components/forms/CoreografiaForm";
 
-export default function Coreografias() {
-  const { escolaId } = useParams();
-
+export default function CoreografiasIndependente() {
+  const { independenteId } = useParams();
   const navigate = useNavigate();
-  if (!escolaId) return null;
+
+  if (!independenteId) return null;
 
   return (
     <main className="min-h-screen bg-black text-white px-6 py-10">
@@ -19,9 +19,7 @@ export default function Coreografias() {
         Cadastro de Coreografias
       </h1>
 
-      {escolaId && (
-        <CoreografiaForm inscricaoId={escolaId} tipoInscricao="escola" />
-      )}
+      <CoreografiaForm inscricaoId={independenteId} tipoInscricao="independente" />
     </main>
   );
 }

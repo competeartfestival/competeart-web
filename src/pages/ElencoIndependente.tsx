@@ -1,28 +1,29 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import BailarinoForm from "../components/forms/BailarinoForm";
-import { listarBailarinos } from "../lib/api";
+import { listarBailarinosIndependente } from "../lib/api";
 import { useNavigate } from "react-router-dom";
 
-export default function Elenco() {
-  const { escolaId } = useParams();
+export default function ElencoIndependente() {
+  const { independenteId } = useParams();
   const [bailarinos, setBailarinos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
+  const [showInfoModal, setShowInfoModal] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!escolaId) return;
+    if (!independenteId) return;
 
-    listarBailarinos(escolaId)
+    listarBailarinosIndependente(independenteId)
       .then(setBailarinos)
       .finally(() => setLoading(false));
-  }, [escolaId]);
+  }, [independenteId]);
 
   function handleAvancar() {
     if (bailarinos.length === 0) {
       setToast(
-        "Você vai precisar de ao menos um bailarino para cadastrar uma coreografia.",
+        "Voce vai precisar de ao menos um bailarino para cadastrar uma coreografia.",
       );
 
       setTimeout(() => {
@@ -32,14 +33,40 @@ export default function Elenco() {
       return;
     }
 
-    navigate(`/inscricao/${escolaId}/coreografias`);
+    navigate(`/independentes/${independenteId}/coreografias`);
   }
 
-  if (!escolaId) return null;
+  if (!independenteId) return null;
 
   return (
     <main className="min-h-screen bg-black text-white px-6 py-10 pb-24">
-      {/* Toast */}
+      {showInfoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
+          <div
+            className="absolute inset-0 bg-black/70"
+            onClick={() => setShowInfoModal(false)}
+          />
+
+          <div className="relative w-full max-w-md rounded-xl bg-zinc-900 border border-zinc-800 p-6">
+            <h2 className="text-xl font-primary text-orange-500 mb-3">
+              Antes de continuar
+            </h2>
+            <p className="text-sm text-gray-300 leading-relaxed">
+              Nesta etapa, cadastre todos os bailarinos que vao participar das
+              coreografias. Se a apresentacao for solo, cadastre apenas voce.
+              Se houver mais participantes, cadastre cada um deles tambem.
+            </p>
+
+            <button
+              onClick={() => setShowInfoModal(false)}
+              className="mt-6 w-full px-4 py-3 rounded-lg bg-orange-500 text-black font-medium hover:bg-orange-600 transition"
+            >
+              Entendi
+            </button>
+          </div>
+        </div>
+      )}
+
       {toast && (
         <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 w-4/5">
           <div className="px-6 py-3 rounded-lg bg-zinc-900 border border-orange-500 text-sm text-orange-400 shadow-lg">
@@ -60,8 +87,8 @@ export default function Elenco() {
       </h1>
 
       <BailarinoForm
-        inscricaoId={escolaId}
-        tipoInscricao="escola"
+        inscricaoId={independenteId}
+        tipoInscricao="independente"
         onNovoBailarino={(bailarino) =>
           setBailarinos((prev) => [...prev, bailarino])
         }
@@ -82,17 +109,9 @@ export default function Elenco() {
 
       <button
         onClick={handleAvancar}
-        className="
-          mt-10
-          px-6 py-3
-          w-full
-          bg-orange-500
-          text-black
-          font-medium
-          hover:bg-orange-600
-        "
+        className="mt-10 px-6 py-3 w-full bg-orange-500 text-black font-medium hover:bg-orange-600"
       >
-        Avançar para Coreografias
+        Avancar para Coreografias
       </button>
     </main>
   );
