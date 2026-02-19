@@ -4,57 +4,45 @@ import { validarAdmin } from "../lib/api";
 
 export default function AdminLogin() {
   const [token, setToken] = useState("");
-  const [erro, setErro] = useState("");
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [mensagemErro, setMensagemErro] = useState("");
+  const [validando, setValidando] = useState(false);
+  const navegar = useNavigate();
 
-  async function handleLogin() {
-    if (!token.trim()) return;
+  async function validarAcesso() {
+    if (!token.trim() || validando) return;
 
-    setErro("");
-    setLoading(true);
+    setMensagemErro("");
+    setValidando(true);
 
     try {
-      const valido = await validarAdmin(token);
+      const chaveValida = await validarAdmin(token);
 
-      if (!valido) {
-        setErro("Chave administrativa inválida.");
-        setLoading(false);
+      if (!chaveValida) {
+        setMensagemErro("Chave administrativa inválida.");
+        setValidando(false);
         return;
       }
 
       localStorage.setItem("admin-token", token);
-      navigate("/admin");
+      navegar("/admin");
     } catch {
-      setErro("Erro ao validar chave. Tente novamente.");
+      setMensagemErro("Erro ao validar chave. Tente novamente.");
     } finally {
-      setLoading(false);
+      setValidando(false);
     }
   }
 
   return (
-    <main className="relative min-h-screen text-white flex items-center justify-center px-8 overflow-hidden">
-      {/* Background image */}
-      <div
-        className="
-          absolute inset-0
-          bg-[url('/assets/adminbg.jpg')]
-          bg-cover bg-center
-          grayscale
-          opacity-40
-        "
-      />
-
-      {/* Overlay escuro */}
+    <main className="relative min-h-screen text-white flex items-center justify-center px-6 md:px-10 overflow-hidden">
+      <div className="absolute inset-0 bg-[url('/assets/adminbg.jpg')] bg-cover bg-center grayscale opacity-40" />
       <div className="absolute inset-0 bg-black/50" />
 
-      {/* Conteúdo */}
-      <div className="relative w-full max-w-sm flex flex-col gap-6 z-10">
+      <div className="relative w-full max-w-md flex flex-col gap-6 z-10">
         <div className="flex flex-col items-center text-center gap-6">
           <img
             src="/assets/logo.png"
             alt="Compete'Art"
-            className="w-32 md:w-56 lg:w-64 drop-shadow-lg"
+            className="w-36 md:w-52 lg:w-60 drop-shadow-lg"
           />
         </div>
 
@@ -62,33 +50,18 @@ export default function AdminLogin() {
           type="password"
           placeholder="Chave administrativa"
           value={token}
-          onChange={(e) => setToken(e.target.value)}
-          className="
-            px-4 py-3 rounded 
-            bg-zinc-900/80 backdrop-blur-sm 
-            text-white 
-            focus:outline-none 
-            focus:ring-2 
-            focus:ring-orange-500
-          "
+          onChange={(evento) => setToken(evento.target.value)}
+          className="px-4 py-3 rounded bg-zinc-900/80 backdrop-blur-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
         />
 
-        {erro && <p className="text-sm text-red-400 text-center">{erro}</p>}
+        {mensagemErro && <p className="text-sm text-red-400 text-center">{mensagemErro}</p>}
 
         <button
-          onClick={handleLogin}
-          disabled={loading}
-          className="
-            px-6 py-3 rounded-lg
-            bg-orange-500
-            text-black
-            font-medium
-            transition-all
-            hover:bg-orange-600
-            disabled:opacity-60
-          "
+          onClick={validarAcesso}
+          disabled={validando}
+          className="px-6 py-3 rounded-lg bg-orange-500 text-black font-medium transition-all hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {loading ? "Validando..." : "Entrar"}
+          {validando ? "Validando..." : "Entrar"}
         </button>
       </div>
     </main>

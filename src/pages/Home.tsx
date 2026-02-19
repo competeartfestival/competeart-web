@@ -52,7 +52,7 @@ export default function Home() {
       />
 
       <div className="relative z-10 flex min-h-screen items-center justify-center px-6">
-        <div className="flex flex-col items-center text-center gap-6">
+        <div className="flex flex-col items-center text-center gap-6 max-w-2xl">
           <img
             src="/assets/logo.png"
             alt="Compete'Art"

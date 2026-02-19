@@ -27,7 +27,7 @@ export default function App() {
         <Route
           path="/inscricao/:escolaId/coreografias"
           element={<Coreografias />}
-        />{" "}
+        />
         <Route path="/inscricao/:escolaId/resumo" element={<Resumo />} />
         <Route
           path="/independentes/:independenteId/elenco"

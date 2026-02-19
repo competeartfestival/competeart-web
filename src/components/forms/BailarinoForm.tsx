@@ -1,41 +1,39 @@
 import { useState } from "react";
 import { criarBailarino, criarBailarinoIndependente } from "../../lib/api";
 
-type BailarinoFormData = {
+type DadosBailarino = {
   nomeCompleto: string;
   nomeArtistico: string;
   cpf: string;
   dataNascimento: string;
 };
 
-type Props = {
+type Propriedades = {
   inscricaoId: string;
   tipoInscricao: "escola" | "independente";
-  onNovoBailarino: (bailarino: any) => void;
+  aoCadastrarBailarino: (bailarino: any) => void;
 };
 
 export default function BailarinoForm({
   inscricaoId,
   tipoInscricao,
-  onNovoBailarino,
-}: Props) {
-  const [formData, setFormData] = useState<BailarinoFormData>({
+  aoCadastrarBailarino,
+}: Propriedades) {
+  const [dadosFormulario, setDadosFormulario] = useState<DadosBailarino>({
     nomeCompleto: "",
     nomeArtistico: "",
     cpf: "",
     dataNascimento: "",
   });
-
   const [erroGeral, setErroGeral] = useState<string | null>(null);
   const [errosCampo, setErrosCampo] = useState<Record<string, string>>({});
+  const [enviando, setEnviando] = useState(false);
 
-  function formatarCPF(valor: string) {
+  function formatarCpf(valor: string) {
     const numeros = valor.replace(/\D/g, "").slice(0, 11);
 
     if (numeros.length <= 3) return numeros;
-    if (numeros.length <= 6) {
-      return `${numeros.slice(0, 3)}.${numeros.slice(3)}`;
-    }
+    if (numeros.length <= 6) return `${numeros.slice(0, 3)}.${numeros.slice(3)}`;
     if (numeros.length <= 9) {
       return `${numeros.slice(0, 3)}.${numeros.slice(3, 6)}.${numeros.slice(6)}`;
     }
@@ -43,47 +41,48 @@ export default function BailarinoForm({
     return `${numeros.slice(0, 3)}.${numeros.slice(3, 6)}.${numeros.slice(6, 9)}-${numeros.slice(9)}`;
   }
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const { name, value } = e.target;
+  function alterarCampo(evento: React.ChangeEvent<HTMLInputElement>) {
+    const { name, value } = evento.target;
 
     if (name === "cpf") {
-      setFormData((prev) => ({
-        ...prev,
-        cpf: formatarCPF(value),
+      setDadosFormulario((dadosAtuais) => ({
+        ...dadosAtuais,
+        cpf: formatarCpf(value),
       }));
       return;
     }
 
-    setFormData((prev) => ({
-      ...prev,
+    setDadosFormulario((dadosAtuais) => ({
+      ...dadosAtuais,
       [name]: value,
     }));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function enviarFormulario(evento: React.FormEvent) {
+    if (enviando) return;
 
+    evento.preventDefault();
     setErroGeral(null);
     setErrosCampo({});
 
     const novosErros: Record<string, string> = {};
-    const cpfSemMascara = formData.cpf.replace(/\D/g, "");
+    const cpfSemMascara = dadosFormulario.cpf.replace(/\D/g, "");
 
-    if (!formData.nomeCompleto.trim()) {
+    if (!dadosFormulario.nomeCompleto.trim()) {
       novosErros.nomeCompleto = "Informe o nome completo.";
     }
 
-    if (!formData.nomeArtistico.trim()) {
-      novosErros.nomeArtistico = "Informe o nome artistico.";
+    if (!dadosFormulario.nomeArtistico.trim()) {
+      novosErros.nomeArtistico = "Informe o nome artístico.";
     }
 
-    if (!formData.cpf.trim()) {
+    if (!dadosFormulario.cpf.trim()) {
       novosErros.cpf = "Informe o CPF.";
     } else if (cpfSemMascara.length !== 11) {
-      novosErros.cpf = "CPF invalido.";
+      novosErros.cpf = "CPF inválido.";
     }
 
-    if (!formData.dataNascimento) {
+    if (!dadosFormulario.dataNascimento) {
       novosErros.dataNascimento = "Informe a data de nascimento.";
     }
 
@@ -93,22 +92,23 @@ export default function BailarinoForm({
     }
 
     try {
+      setEnviando(true);
       const payload = {
-        ...formData,
+        ...dadosFormulario,
         cpf: cpfSemMascara,
       };
 
-      const resultado =
+      const resposta =
         tipoInscricao === "escola"
           ? await criarBailarino(inscricaoId, payload)
           : await criarBailarinoIndependente(inscricaoId, payload);
 
-      onNovoBailarino({
-        id: resultado.id,
-        ...formData,
+      aoCadastrarBailarino({
+        id: resposta.id,
+        ...dadosFormulario,
       });
 
-      setFormData({
+      setDadosFormulario({
         nomeCompleto: "",
         nomeArtistico: "",
         cpf: "",
@@ -116,73 +116,80 @@ export default function BailarinoForm({
       });
     } catch {
       setErroGeral("Erro ao cadastrar bailarino. Tente novamente.");
+    } finally {
+      setEnviando(false);
     }
   }
 
   return (
-    <div>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-md">
-        {erroGeral && (
-          <div className="p-3 rounded-md bg-red-500/10 text-red-400 text-sm">
-            {erroGeral}
-          </div>
-        )}
+    <form onSubmit={enviarFormulario} className="flex flex-col gap-4 max-w-2xl w-full">
+      {erroGeral && (
+        <div className="p-3 rounded-md bg-red-500/10 text-red-400 text-sm">{erroGeral}</div>
+      )}
 
-        <input
-          name="nomeCompleto"
-          type="text"
-          placeholder="Nome completo"
-          value={formData.nomeCompleto}
-          onChange={handleChange}
-          className="px-4 py-3 rounded-md bg-zinc-900 text-white focus:outline-none"
-        />
-        {errosCampo.nomeCompleto && (
-          <p className="text-sm text-red-400">{errosCampo.nomeCompleto}</p>
-        )}
+      <div className="grid md:grid-cols-2 gap-4">
+        <div>
+          <input
+            name="nomeCompleto"
+            type="text"
+            placeholder="Nome completo"
+            value={dadosFormulario.nomeCompleto}
+            onChange={alterarCampo}
+            className="w-full px-4 py-3 rounded-md bg-zinc-900 text-white focus:outline-none"
+          />
+          {errosCampo.nomeCompleto && (
+            <p className="text-sm text-red-400 mt-1">{errosCampo.nomeCompleto}</p>
+          )}
+        </div>
 
-        <input
-          name="nomeArtistico"
-          type="text"
-          placeholder="Nome artistico"
-          value={formData.nomeArtistico}
-          onChange={handleChange}
-          className="px-4 py-3 rounded-md bg-zinc-900 text-white focus:outline-none"
-        />
-        {errosCampo.nomeArtistico && (
-          <p className="text-sm text-red-400">{errosCampo.nomeArtistico}</p>
-        )}
+        <div>
+          <input
+            name="nomeArtistico"
+            type="text"
+            placeholder="Nome artístico"
+            value={dadosFormulario.nomeArtistico}
+            onChange={alterarCampo}
+            className="w-full px-4 py-3 rounded-md bg-zinc-900 text-white focus:outline-none"
+          />
+          {errosCampo.nomeArtistico && (
+            <p className="text-sm text-red-400 mt-1">{errosCampo.nomeArtistico}</p>
+          )}
+        </div>
 
-        <input
-          name="cpf"
-          type="text"
-          placeholder="CPF"
-          value={formData.cpf}
-          onChange={handleChange}
-          className="px-4 py-3 rounded-md bg-zinc-900 text-white focus:outline-none"
-        />
-        {errosCampo.cpf && <p className="text-sm text-red-400">{errosCampo.cpf}</p>}
+        <div>
+          <input
+            name="cpf"
+            type="text"
+            placeholder="CPF"
+            value={dadosFormulario.cpf}
+            onChange={alterarCampo}
+            className="w-full px-4 py-3 rounded-md bg-zinc-900 text-white focus:outline-none"
+          />
+          {errosCampo.cpf && <p className="text-sm text-red-400 mt-1">{errosCampo.cpf}</p>}
+        </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm text-gray-400">Data de nascimento</label>
+        <div>
+          <label className="text-sm text-gray-400 block mb-1">Data de nascimento</label>
           <input
             name="dataNascimento"
             type="date"
-            value={formData.dataNascimento}
-            onChange={handleChange}
-            className="px-4 py-3 rounded-md bg-zinc-900 text-white focus:outline-none"
+            value={dadosFormulario.dataNascimento}
+            onChange={alterarCampo}
+            className="w-full px-4 py-3 rounded-md bg-zinc-900 text-white focus:outline-none"
           />
+          {errosCampo.dataNascimento && (
+            <p className="text-sm text-red-400 mt-1">{errosCampo.dataNascimento}</p>
+          )}
         </div>
-        {errosCampo.dataNascimento && (
-          <p className="text-sm text-red-400">{errosCampo.dataNascimento}</p>
-        )}
+      </div>
 
-        <button
-          type="submit"
-          className="mt-4 px-6 py-3 border-2 border-solid rounded-lg border-orange-500 bg-transparent text-orange-500 font-medium hover:bg-orange-500 hover:text-black"
-        >
-          Salvar bailarino
-        </button>
-      </form>
-    </div>
+      <button
+        type="submit"
+        disabled={enviando}
+        className="mt-2 px-6 py-3 border-2 border-orange-500 rounded-lg bg-transparent text-orange-500 font-medium hover:bg-orange-500 hover:text-black disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        {enviando ? "Salvando..." : "Salvar bailarino"}
+      </button>
+    </form>
   );
 }

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { criarIndependente } from "../../lib/api";
 
-type FormData = {
+type DadosIndependente = {
   nomeResponsavel: string;
   email: string;
   whatsapp: string;
@@ -10,8 +10,9 @@ type FormData = {
 };
 
 export default function IndependenteForm() {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState<FormData>({
+  const navegar = useNavigate();
+
+  const [dadosFormulario, setDadosFormulario] = useState<DadosIndependente>({
     nomeResponsavel: "",
     email: "",
     whatsapp: "",
@@ -19,53 +20,43 @@ export default function IndependenteForm() {
   });
   const [erroGeral, setErroGeral] = useState<string | null>(null);
   const [errosCampo, setErrosCampo] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [enviando, setEnviando] = useState(false);
 
   function formatarTelefone(valor: string) {
     const numeros = valor.replace(/\D/g, "").slice(0, 11);
 
-    if (numeros.length <= 2) {
-      return numeros;
-    }
-
-    if (numeros.length <= 7) {
-      return `(${numeros.slice(0, 2)}) ${numeros.slice(2)}`;
-    }
+    if (numeros.length <= 2) return numeros;
+    if (numeros.length <= 7) return `(${numeros.slice(0, 2)}) ${numeros.slice(2)}`;
 
     return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7)}`;
   }
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const { name, value } = e.target;
+  function alterarCampo(evento: React.ChangeEvent<HTMLInputElement>) {
+    const { name, value } = evento.target;
 
-    setFormData((prev) => ({
-      ...prev,
+    setDadosFormulario((dadosAtuais) => ({
+      ...dadosAtuais,
       [name]: name === "limiteCoreografias" ? Number(value) : value,
     }));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    if (isSubmitting) return;
+  async function enviarFormulario(evento: React.FormEvent) {
+    if (enviando) return;
 
-    e.preventDefault();
+    evento.preventDefault();
     setErroGeral(null);
     setErrosCampo({});
 
     const novosErros: Record<string, string> = {};
 
-    if (!formData.nomeResponsavel.trim()) {
+    if (!dadosFormulario.nomeResponsavel.trim()) {
       novosErros.nomeResponsavel = "Informe o seu nome completo.";
     }
-
-    if (!formData.email.trim()) {
-      novosErros.email = "Informe o e-mail.";
-    }
-
-    if (!formData.whatsapp.trim()) {
+    if (!dadosFormulario.email.trim()) novosErros.email = "Informe o e-mail.";
+    if (!dadosFormulario.whatsapp.trim()) {
       novosErros.whatsapp = "Informe o WhatsApp.";
     }
-
-    if (formData.limiteCoreografias < 1) {
+    if (dadosFormulario.limiteCoreografias < 1) {
       novosErros.limiteCoreografias = "Informe pelo menos 1 coreografia.";
     }
 
@@ -75,89 +66,92 @@ export default function IndependenteForm() {
     }
 
     try {
-      setIsSubmitting(true);
-      const resultado = await criarIndependente(formData);
-      navigate(`/independentes/${resultado.id}/elenco`);
-    } catch (error: any) {
-      setErroGeral(error?.message || "Erro ao criar inscrição independente.");
+      setEnviando(true);
+      const resposta = await criarIndependente(dadosFormulario);
+      navegar(`/independentes/${resposta.id}/elenco`);
+    } catch (erro: any) {
+      setErroGeral(erro?.message || "Erro ao criar inscrição independente.");
     } finally {
-      setIsSubmitting(false);
+      setEnviando(false);
     }
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col gap-4 max-w-md mx-auto"
-    >
+    <form onSubmit={enviarFormulario} className="max-w-4xl mx-auto">
       {erroGeral && (
-        <div className="p-3 rounded-md bg-red-500/10 text-red-400 text-sm">
-          {erroGeral}
+        <div className="mb-4 p-3 rounded-md bg-red-500/10 text-red-400 text-sm">{erroGeral}</div>
+      )}
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <div>
+          <input
+            name="nomeResponsavel"
+            type="text"
+            placeholder="Nome do responsável"
+            value={dadosFormulario.nomeResponsavel}
+            onChange={alterarCampo}
+            className="w-full px-4 py-3 rounded-md bg-zinc-900 text-white placeholder-gray-400 focus:outline-none"
+          />
+          {errosCampo.nomeResponsavel && (
+            <p className="text-sm text-red-400 mt-1">{errosCampo.nomeResponsavel}</p>
+          )}
         </div>
-      )}
 
-      <input
-        name="nomeResponsavel"
-        type="text"
-        placeholder="Nome do bailarino"
-        value={formData.nomeResponsavel}
-        onChange={handleChange}
-        className="px-4 py-3 rounded-md bg-zinc-900 text-white placeholder-gray-400 focus:outline-none"
-      />
-      {errosCampo.nomeResponsavel && (
-        <p className="text-sm text-red-400">{errosCampo.nomeResponsavel}</p>
-      )}
+        <div>
+          <input
+            name="email"
+            type="email"
+            placeholder="E-mail"
+            value={dadosFormulario.email}
+            onChange={alterarCampo}
+            className="w-full px-4 py-3 rounded-md bg-zinc-900 text-white placeholder-gray-400 focus:outline-none"
+          />
+          {errosCampo.email && <p className="text-sm text-red-400 mt-1">{errosCampo.email}</p>}
+        </div>
 
-      <input
-        name="email"
-        type="email"
-        placeholder="E-mail"
-        value={formData.email}
-        onChange={handleChange}
-        className="px-4 py-3 rounded-md bg-zinc-900 text-white placeholder-gray-400 focus:outline-none"
-      />
-      {errosCampo.email && (
-        <p className="text-sm text-red-400">{errosCampo.email}</p>
-      )}
+        <div>
+          <input
+            name="whatsapp"
+            type="tel"
+            placeholder="WhatsApp"
+            value={dadosFormulario.whatsapp}
+            onChange={(evento) =>
+              setDadosFormulario((dadosAtuais) => ({
+                ...dadosAtuais,
+                whatsapp: formatarTelefone(evento.target.value),
+              }))
+            }
+            className="w-full px-4 py-3 rounded-md bg-zinc-900 text-white placeholder-gray-400 focus:outline-none"
+          />
+          {errosCampo.whatsapp && (
+            <p className="text-sm text-red-400 mt-1">{errosCampo.whatsapp}</p>
+          )}
+        </div>
 
-      <input
-        name="whatsapp"
-        type="tel"
-        placeholder="WhatsApp"
-        value={formData.whatsapp}
-        onChange={(e) =>
-          setFormData((prev) => ({
-            ...prev,
-            whatsapp: formatarTelefone(e.target.value),
-          }))
-        }
-        className="px-4 py-3 rounded-md bg-zinc-900 text-white placeholder-gray-400 focus:outline-none"
-      />
-      {errosCampo.whatsapp && (
-        <p className="text-sm text-red-400">{errosCampo.whatsapp}</p>
-      )}
-
-      <label> Quantidade de coreografias:</label>
-      <input
-        name="limiteCoreografias"
-        type="text"
-        inputMode="numeric"
-        pattern="[0-9]*"
-        placeholder="Quantidade de coreografias"
-        value={formData.limiteCoreografias}
-        onChange={handleChange}
-        className="px-4 py-3 rounded-md bg-zinc-900 text-white placeholder-gray-400 focus:outline-none"
-      />
-      {errosCampo.limiteCoreografias && (
-        <p className="text-sm text-red-400">{errosCampo.limiteCoreografias}</p>
-      )}
+        <div>
+          <label className="text-sm text-gray-400 block mb-1">Quantidade de coreografias</label>
+          <input
+            name="limiteCoreografias"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            placeholder="Quantidade de coreografias"
+            value={dadosFormulario.limiteCoreografias}
+            onChange={alterarCampo}
+            className="w-full px-4 py-3 rounded-md bg-zinc-900 text-white placeholder-gray-400 focus:outline-none"
+          />
+          {errosCampo.limiteCoreografias && (
+            <p className="text-sm text-red-400 mt-1">{errosCampo.limiteCoreografias}</p>
+          )}
+        </div>
+      </div>
 
       <button
         type="submit"
-        disabled={isSubmitting}
-        className="mt-4 px-6 py-3 bg-orange-500 text-black font-medium transition-colors hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed"
+        disabled={enviando}
+        className="mt-8 px-6 py-3 bg-orange-500 text-black font-medium transition-colors hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        {isSubmitting ? "Carregando..." : "Avançar"}
+        {enviando ? "Avançando..." : "Avançar"}
       </button>
     </form>
   );

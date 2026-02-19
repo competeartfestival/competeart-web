@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { listarEscolasAdmin, buscarEscolaAdmin } from "../lib/api";
 import { useNavigate } from "react-router-dom";
+import { buscarEscolaAdmin, listarEscolasAdmin } from "../lib/api";
 
 type InscricaoAdmin = {
   id: string;
@@ -13,249 +13,212 @@ type InscricaoAdmin = {
 };
 
 export default function Admin() {
-  const navigate = useNavigate();
-  const [selecionada, setSelecionada] = useState<string | null>(null);
-  const [detalhe, setDetalhe] = useState<any>(null);
+  const navegar = useNavigate();
+
+  const [idSelecionado, setIdSelecionado] = useState<string | null>(null);
+  const [detalheInscricao, setDetalheInscricao] = useState<any>(null);
   const [inscricoes, setInscricoes] = useState<InscricaoAdmin[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [coreografiaSelecionada, setCoreografiaSelecionada] =
-    useState<any>(null);
+  const [carregandoLista, setCarregandoLista] = useState(true);
+  const [coreografiaSelecionada, setCoreografiaSelecionada] = useState<any>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("admin-token");
-
-    if (!token) {
-      navigate("/admin/login");
-    }
-  }, [navigate]);
+    if (!token) navegar("/admin/login");
+  }, [navegar]);
 
   useEffect(() => {
     listarEscolasAdmin()
       .then((dados) => setInscricoes(dados || []))
-      .finally(() => setLoading(false));
+      .finally(() => setCarregandoLista(false));
   }, []);
 
-  async function abrirDetalhe(id: string) {
-    setSelecionada(id);
+  async function abrirDetalhes(id: string) {
+    setIdSelecionado(id);
     setCoreografiaSelecionada(null);
 
     const dados = await buscarEscolaAdmin(id);
-    setDetalhe(dados);
+    setDetalheInscricao(dados);
   }
 
-  function fecharDetalhe() {
-    setSelecionada(null);
-    setDetalhe(null);
+  function fecharDetalhes() {
+    setIdSelecionado(null);
+    setDetalheInscricao(null);
     setCoreografiaSelecionada(null);
   }
 
-  const tituloDetalhe =
-    detalhe?.escola?.nome || detalhe?.independente?.nomeResponsavel;
+  const tituloDetalhes =
+    detalheInscricao?.escola?.nome || detalheInscricao?.independente?.nomeResponsavel;
 
   return (
-    <main className="min-h-screen bg-black text-white px-6 py-10">
-      <h1 className="text-3xl font-primary text-orange-500 mb-8">Inscricoes</h1>
+    <main className="min-h-screen bg-black text-white px-6 py-8 md:py-10">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-primary text-orange-500 mb-8">Inscrições</h1>
 
-      {loading ? (
-        <p className="text-gray-400">Carregando...</p>
-      ) : (
-        <>
-          <div className="mb-8 flex gap-6 text-sm text-gray-400">
-            <span>Total: {inscricoes.length}</span>
-          </div>
+        {carregandoLista ? (
+          <p className="text-gray-400">Carregando...</p>
+        ) : (
+          <>
+            <div className="mb-8 text-sm text-gray-400">Total: {inscricoes.length}</div>
 
-          <div className="flex flex-col gap-4">
-            {inscricoes.map((inscricao) => (
-              <div
-                key={inscricao.id}
-                onClick={() => abrirDetalhe(inscricao.id)}
-                className="cursor-pointer hover:bg-zinc-800 transition p-5 rounded-xl bg-zinc-900 flex justify-between items-center"
-              >
-                <div>
-                  {inscricao.tipoInscricao === "ESCOLA" ? (
-                    <span className="px-2 py-1 rounded text-xs bg-orange-500 text-black font-semibold">
-                      ESCOLA
-                    </span>
-                  ) : (
-                    <span className="px-2 py-1 rounded text-xs border border-orange-500 text-orange-400 bg-black font-semibold">
-                      BAILARINO INDEPENDENTE
-                    </span>
-                  )}
-                  <div className="flex items-center gap-3 my-2">
-                    <h2 className="font-secondary text-lg">{inscricao.nome}</h2>
+            <div className="grid xl:grid-cols-2 gap-4">
+              {inscricoes.map((inscricao) => (
+                <button
+                  key={inscricao.id}
+                  onClick={() => abrirDetalhes(inscricao.id)}
+                  className="text-left hover:bg-zinc-800 transition p-5 rounded-xl bg-zinc-900 flex justify-between items-center"
+                >
+                  <div>
+                    {inscricao.tipoInscricao === "ESCOLA" ? (
+                      <span className="px-2 py-1 rounded text-xs bg-orange-500 text-black font-semibold">
+                        ESCOLA
+                      </span>
+                    ) : (
+                      <span className="px-2 py-1 rounded text-xs border border-orange-500 text-orange-400 bg-black font-semibold">
+                        BAILARINO INDEPENDENTE
+                      </span>
+                    )}
+
+                    <h2 className="font-secondary text-lg mt-3">{inscricao.nome}</h2>
+                    <p className="text-sm text-gray-400 mt-1">
+                      {inscricao.coreografiasCadastradas} coreografias
+                    </p>
                   </div>
 
-                  <p className="text-sm text-gray-400 mt-1">
-                    {inscricao.coreografiasCadastradas} coreografias
-                  </p>
-                </div>
-
-                <div className="text-right">
-                  <p className="text-orange-500 font-bold text-lg">
-                    R$ {inscricao.valorTotal}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-
-      {selecionada && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end">
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={fecharDetalhe}
-          />
-
-          <div className="relative bg-zinc-950 rounded-t-2xl p-6 h-[90vh] overflow-y-auto shadow-2xl animate-slideUp">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-primary text-orange-500">
-                {tituloDetalhe}
-              </h2>
-
-              <button
-                onClick={fecharDetalhe}
-                className="px-4 py-2 text-sm rounded-lg bg-zinc-800 hover:bg-zinc-700 transition"
-              >
-                Fechar
-              </button>
+                  <p className="text-orange-500 font-bold text-lg">R$ {inscricao.valorTotal}</p>
+                </button>
+              ))}
             </div>
+          </>
+        )}
+      </div>
 
-            {!detalhe ? (
-              <p className="text-gray-400">Carregando...</p>
-            ) : (
-              <>
-                <p className="text-sm text-gray-400 mb-6">
-                  Total: R$ {detalhe.valores.total}
-                </p>
+      {idSelecionado && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={fecharDetalhes} />
 
-                {detalhe.escola ? (
-                  <div className="mb-6 space-y-2 text-sm text-gray-300">
-                    <p>
-                      <span className="text-gray-500">Diretor:</span>{" "}
-                      {detalhe.escola.nomeDiretor}
-                    </p>
+          <div className="relative bg-zinc-950 rounded-t-2xl p-6 h-[92vh] overflow-y-auto shadow-2xl animate-slideUp">
+            <div className="max-w-5xl mx-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl md:text-2xl font-primary text-orange-500">{tituloDetalhes}</h2>
 
-                    <p>
-                      <span className="text-gray-500">WhatsApp:</span>{" "}
-                      {detalhe.escola.whatsapp}
-                    </p>
+                <button
+                  onClick={fecharDetalhes}
+                  className="px-4 py-2 text-sm rounded-lg bg-zinc-800 hover:bg-zinc-700 transition"
+                >
+                  Fechar
+                </button>
+              </div>
 
-                    <p>
-                      <span className="text-gray-500">Endereco:</span>{" "}
-                      {detalhe.escola.endereco}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="mb-6 space-y-2 text-sm text-gray-300">
-                    <p>
-                      <span className="text-gray-500">Responsavel:</span>{" "}
-                      {detalhe.independente.nomeResponsavel}
-                    </p>
+              {!detalheInscricao ? (
+                <p className="text-gray-400">Carregando...</p>
+              ) : (
+                <>
+                  <p className="text-sm text-gray-400 mb-6">Total: R$ {detalheInscricao.valores.total}</p>
 
-                    <p>
-                      <span className="text-gray-500">WhatsApp:</span>{" "}
-                      {detalhe.independente.whatsapp}
-                    </p>
-
-                    <p>
-                      <span className="text-gray-500">E-mail:</span>{" "}
-                      {detalhe.independente.email}
-                    </p>
-                  </div>
-                )}
-
-                {!coreografiaSelecionada ? (
-                  <>
-                    <h3 className="font-secondary mb-4">Coreografias</h3>
-
-                    <div className="flex flex-col gap-4">
-                      {detalhe.detalhamento.coreografias.map((c: any) => (
-                        <div
-                          key={c.id}
-                          onClick={() => setCoreografiaSelecionada(c)}
-                          className="p-4 bg-zinc-900 rounded-xl cursor-pointer hover:bg-zinc-800 transition"
-                        >
-                          <p className="font-medium text-lg">{c.nome}</p>
-                          <p className="text-sm text-gray-400">
-                            {c.formacao} • {c.bailarinos} bailarinos
-                          </p>
-                          <p className="text-orange-500 font-semibold mt-2">
-                            R$ {c.valor}
-                          </p>
-                        </div>
-                      ))}
+                  {detalheInscricao.escola ? (
+                    <div className="mb-6 space-y-2 text-sm text-gray-300">
+                      <p>
+                        <span className="text-gray-500">Diretor:</span> {detalheInscricao.escola.nomeDiretor}
+                      </p>
+                      <p>
+                        <span className="text-gray-500">WhatsApp:</span> {detalheInscricao.escola.whatsapp}
+                      </p>
+                      <p>
+                        <span className="text-gray-500">Endereço:</span> {detalheInscricao.escola.endereco}
+                      </p>
                     </div>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => setCoreografiaSelecionada(null)}
-                      className="mb-6 text-sm text-orange-400 hover:underline"
-                    >
-                      ← Voltar para coreografias
-                    </button>
+                  ) : (
+                    <div className="mb-6 space-y-2 text-sm text-gray-300">
+                      <p>
+                        <span className="text-gray-500">Responsável:</span>{" "}
+                        {detalheInscricao.independente.nomeResponsavel}
+                      </p>
+                      <p>
+                        <span className="text-gray-500">WhatsApp:</span> {detalheInscricao.independente.whatsapp}
+                      </p>
+                      <p>
+                        <span className="text-gray-500">E-mail:</span> {detalheInscricao.independente.email}
+                      </p>
+                    </div>
+                  )}
 
-                    <div className="space-y-4">
-                      <h3 className="text-xl font-primary text-orange-500">
-                        {coreografiaSelecionada.nome}
-                      </h3>
+                  {!coreografiaSelecionada ? (
+                    <>
+                      <h3 className="font-secondary mb-4">Coreografias</h3>
 
-                      <div className="text-sm text-gray-300 space-y-2">
-                        <p>
-                          <span className="text-gray-500">Formação:</span>{" "}
-                          {coreografiaSelecionada.formacao}
-                        </p>
-                        <p>
-                          <span className="text-gray-500">Modalidade:</span>{" "}
-                          {coreografiaSelecionada.modalidade}
-                        </p>
-                        <p>
-                          <span className="text-gray-500">Categoria:</span>{" "}
-                          {coreografiaSelecionada.categoria}
-                        </p>
-                        <p>
-                          <span className="text-gray-500">Duração:</span>{" "}
-                          {coreografiaSelecionada.duracao}
-                        </p>
-                        <p>
-                          <span className="text-gray-500">Música:</span>{" "}
-                          {coreografiaSelecionada.musica}
-                        </p>
-                        <p>
-                          <span className="text-gray-500">Tem cenario:</span>{" "}
-                          {coreografiaSelecionada.temCenario ? "Sim" : "Nao"}
-                        </p>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        {detalheInscricao.detalhamento.coreografias.map((coreografia: any) => (
+                          <button
+                            key={coreografia.id}
+                            onClick={() => setCoreografiaSelecionada(coreografia)}
+                            className="text-left p-4 bg-zinc-900 rounded-xl hover:bg-zinc-800 transition"
+                          >
+                            <p className="font-medium text-lg">{coreografia.nome}</p>
+                            <p className="text-sm text-gray-400">
+                              {coreografia.formacao} • {coreografia.bailarinos} bailarinos
+                            </p>
+                            <p className="text-orange-500 font-semibold mt-2">R$ {coreografia.valor}</p>
+                          </button>
+                        ))}
                       </div>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => setCoreografiaSelecionada(null)}
+                        className="mb-6 text-sm text-orange-400 hover:underline"
+                      >
+                        ← Voltar para coreografias
+                      </button>
 
-                      <div className="mt-6">
-                        <h4 className="font-secondary mb-3">Bailarinos</h4>
+                      <div className="grid lg:grid-cols-[minmax(0,1fr)_280px] gap-6">
+                        <div className="space-y-4">
+                          <h3 className="text-xl font-primary text-orange-500">{coreografiaSelecionada.nome}</h3>
 
-                        <div className="flex flex-col gap-2">
-                          {coreografiaSelecionada.listaBailarinos?.map(
-                            (b: any) => (
-                              <div
-                                key={b.id}
-                                className="bg-zinc-900 p-3 rounded"
-                              >
-                                {b.nomeArtistico || b.nomeCompleto}
-                              </div>
-                            ),
-                          )}
+                          <div className="text-sm text-gray-300 space-y-2">
+                            <p>
+                              <span className="text-gray-500">Formação:</span> {coreografiaSelecionada.formacao}
+                            </p>
+                            <p>
+                              <span className="text-gray-500">Modalidade:</span> {coreografiaSelecionada.modalidade}
+                            </p>
+                            <p>
+                              <span className="text-gray-500">Categoria:</span> {coreografiaSelecionada.categoria}
+                            </p>
+                            <p>
+                              <span className="text-gray-500">Duração:</span> {coreografiaSelecionada.duracao}
+                            </p>
+                            <p>
+                              <span className="text-gray-500">Música:</span> {coreografiaSelecionada.musica}
+                            </p>
+                            <p>
+                              <span className="text-gray-500">Tem cenário:</span>{" "}
+                              {coreografiaSelecionada.temCenario ? "Sim" : "Não"}
+                            </p>
+                          </div>
+
+                          <div className="mt-4">
+                            <h4 className="font-secondary mb-3">Bailarinos</h4>
+                            <div className="grid sm:grid-cols-2 gap-2">
+                              {coreografiaSelecionada.listaBailarinos?.map((bailarino: any) => (
+                                <div key={bailarino.id} className="bg-zinc-900 p-3 rounded border border-zinc-800">
+                                  {bailarino.nomeArtistico || bailarino.nomeCompleto}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-zinc-900/70 border border-zinc-800 rounded-xl p-4 h-fit">
+                          <p className="text-xs text-gray-400">Valor da coreografia</p>
+                          <p className="text-orange-500 font-bold text-3xl mt-2">R$ {coreografiaSelecionada.valor}</p>
                         </div>
                       </div>
-
-                      <div className="mt-6 text-right">
-                        <p className="text-orange-500 font-bold text-2xl">
-                          R$ {coreografiaSelecionada.valor}
-                        </p>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </>
-            )}
+                    </>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}

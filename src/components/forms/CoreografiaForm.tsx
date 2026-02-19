@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
-import {
-  listarBailarinos,
-  criarCoreografia,
-  listarBailarinosIndependente,
-  criarCoreografiaIndependente,
-} from "../../lib/api";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  criarCoreografia,
+  criarCoreografiaIndependente,
+  listarBailarinos,
+  listarBailarinosIndependente,
+} from "../../lib/api";
 
-type CoreografiaFormData = {
+type DadosCoreografia = {
   nome: string;
   nomeCoreografo: string;
   formacao: string;
@@ -18,9 +18,9 @@ type CoreografiaFormData = {
   temCenario: boolean;
 };
 
-type FormErrors = Partial<Record<keyof CoreografiaFormData, string>>;
+type ErrosFormulario = Partial<Record<keyof DadosCoreografia, string>>;
 
-type Props = {
+type Propriedades = {
   inscricaoId: string;
   tipoInscricao: "escola" | "independente";
 };
@@ -29,18 +29,15 @@ function obterLoteAtual(): 1 | 2 | 3 {
   const hoje = new Date();
   const ano = 2026;
 
-  const lote1Fim = new Date(ano, 2, 26, 23, 59, 59);
-  const lote2Fim = new Date(ano, 3, 2, 23, 59, 59);
+  const fimLote1 = new Date(ano, 2, 26, 23, 59, 59);
+  const fimLote2 = new Date(ano, 3, 2, 23, 59, 59);
 
-  if (hoje <= lote1Fim) return 1;
-  if (hoje <= lote2Fim) return 2;
+  if (hoje <= fimLote1) return 1;
+  if (hoje <= fimLote2) return 2;
   return 3;
 }
 
-function calcularValorCoreografia(
-  formacao: string,
-  quantidadeBailarinos: number,
-): number {
+function calcularValorCoreografia(formacao: string, quantidadeBailarinos: number): number {
   const lote = obterLoteAtual();
 
   const tabela: Record<string, number[]> = {
@@ -59,10 +56,10 @@ function calcularValorCoreografia(
   return tabela[formacao][lote - 1];
 }
 
-export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Props) {
-  const navigate = useNavigate();
+export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Propriedades) {
+  const navegar = useNavigate();
 
-  const [formData, setFormData] = useState<CoreografiaFormData>({
+  const [dadosFormulario, setDadosFormulario] = useState<DadosCoreografia>({
     nome: "",
     nomeCoreografo: "",
     formacao: "",
@@ -72,20 +69,19 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Props) {
     musica: "",
     temCenario: false,
   });
-
   const [bailarinos, setBailarinos] = useState<any[]>([]);
-  const [selecionados, setSelecionados] = useState<string[]>([]);
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [erroForm, setErroForm] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [bailarinosSelecionados, setBailarinosSelecionados] = useState<string[]>([]);
+  const [errosFormulario, setErrosFormulario] = useState<ErrosFormulario>({});
+  const [erroGeral, setErroGeral] = useState<string | null>(null);
+  const [enviando, setEnviando] = useState(false);
 
   useEffect(() => {
-    const carregar =
+    const carregamento =
       tipoInscricao === "escola"
         ? listarBailarinos(inscricaoId)
         : listarBailarinosIndependente(inscricaoId);
 
-    carregar.then(setBailarinos);
+    carregamento.then(setBailarinos);
   }, [inscricaoId, tipoInscricao]);
 
   function limitePorFormacao(formacao: string) {
@@ -103,340 +99,354 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Props) {
     }
   }
 
-  function toggleBailarino(id: string) {
-    const limite = limitePorFormacao(formData.formacao);
+  function selecionarBailarino(id: string) {
+    const limite = limitePorFormacao(dadosFormulario.formacao);
 
-    if (selecionados.includes(id)) {
-      setSelecionados((prev) => prev.filter((b) => b !== id));
+    if (bailarinosSelecionados.includes(id)) {
+      setBailarinosSelecionados((listaAtual) => listaAtual.filter((b) => b !== id));
       return;
     }
 
-    if (selecionados.length >= limite) {
-      setErroForm("Quantidade de bailarinos incompatível com a formação.");
+    if (bailarinosSelecionados.length >= limite) {
+      setErroGeral("Quantidade de bailarinos incompatível com a formação.");
       return;
     }
 
-    setErroForm(null);
-    setSelecionados((prev) => [...prev, id]);
+    setErroGeral(null);
+    setBailarinosSelecionados((listaAtual) => [...listaAtual, id]);
   }
 
-  function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  function alterarCampo(
+    evento: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) {
-    const { name, value, type } = e.target;
+    const { name, value, type } = evento.target;
 
-    setFormData((prev) => ({
-      ...prev,
+    setDadosFormulario((dadosAtuais) => ({
+      ...dadosAtuais,
       [name]:
-        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+        type === "checkbox" ? (evento.target as HTMLInputElement).checked : value,
     }));
 
-    if (errors[name as keyof CoreografiaFormData]) {
-      setErrors((prev) => {
-        const copia = { ...prev };
-        delete copia[name as keyof CoreografiaFormData];
+    if (errosFormulario[name as keyof DadosCoreografia]) {
+      setErrosFormulario((errosAtuais) => {
+        const copia = { ...errosAtuais };
+        delete copia[name as keyof DadosCoreografia];
         return copia;
       });
     }
   }
 
-  function handleDuracaoChange(valor: string) {
+  function alterarDuracao(valor: string) {
     const numeros = valor.replace(/\D/g, "").slice(0, 4);
 
     if (numeros.length <= 2) {
-      setFormData((prev) => ({ ...prev, duracao: numeros }));
+      setDadosFormulario((dadosAtuais) => ({ ...dadosAtuais, duracao: numeros }));
     } else {
       const minutos = numeros.slice(0, 2);
       const segundos = numeros.slice(2);
-      setFormData((prev) => ({
-        ...prev,
+      setDadosFormulario((dadosAtuais) => ({
+        ...dadosAtuais,
         duracao: `${minutos}:${segundos}`,
       }));
     }
 
-    if (errors.duracao) {
-      setErrors((prev) => {
-        const copia = { ...prev };
+    if (errosFormulario.duracao) {
+      setErrosFormulario((errosAtuais) => {
+        const copia = { ...errosAtuais };
         delete copia.duracao;
         return copia;
       });
     }
   }
 
-  function duracaoEmSegundos(duracao: string): number {
+  function converterDuracaoParaSegundos(duracao: string): number {
     const partes = duracao.split(":").map(Number);
     if (partes.length !== 2 || partes.some(isNaN)) return 0;
 
-    const [min, seg] = partes;
-    if (seg > 59) return 0;
+    const [minutos, segundos] = partes;
+    if (segundos > 59) return 0;
 
-    return min * 60 + seg;
+    return minutos * 60 + segundos;
   }
 
   function limiteDuracao(formacao: string) {
     return formacao === "GRUPO" ? 450 : 255;
   }
 
-  function converterParaFormatoBackend(duracao: string) {
-    const [min, seg] = duracao.split(":");
-    return `00:${min.padStart(2, "0")}:${seg.padStart(2, "0")}`;
+  function formatarDuracaoParaBackend(duracao: string) {
+    const [minutos, segundos] = duracao.split(":");
+    return `00:${minutos.padStart(2, "0")}:${segundos.padStart(2, "0")}`;
   }
 
   function validarFormulario(): boolean {
-    const novosErros: FormErrors = {};
+    const novosErros: ErrosFormulario = {};
 
-    if (!formData.nome.trim())
-      novosErros.nome = "Informe o nome da coreografia.";
+    if (!dadosFormulario.nome.trim()) novosErros.nome = "Informe o nome da coreografia.";
+    if (!dadosFormulario.nomeCoreografo.trim()) {
+      novosErros.nomeCoreografo = "Informe o nome do coreógrafo.";
+    }
+    if (!dadosFormulario.formacao) novosErros.formacao = "Selecione a formação.";
+    if (!dadosFormulario.modalidade) {
+      novosErros.modalidade = "Selecione a modalidade.";
+    }
+    if (!dadosFormulario.categoria) novosErros.categoria = "Selecione a categoria.";
+    if (!dadosFormulario.duracao) novosErros.duracao = "Informe a duração.";
+    if (!dadosFormulario.musica.trim()) novosErros.musica = "Informe o nome da música.";
 
-    if (!formData.nomeCoreografo.trim()) {
-      novosErros.nomeCoreografo = "Informe o nome do coreografo.";
+    if (bailarinosSelecionados.length === 0) {
+      setErroGeral("Selecione ao menos um bailarino.");
     }
 
-    if (!formData.formacao) novosErros.formacao = "Selecione a formacao.";
+    setErrosFormulario(novosErros);
 
-    if (!formData.modalidade) novosErros.modalidade = "Selecione a modalidade.";
-
-    if (!formData.categoria) novosErros.categoria = "Selecione a categoria.";
-
-    if (!formData.duracao) novosErros.duracao = "Informe a duracao.";
-
-    if (!formData.musica.trim())
-      novosErros.musica = "Informe o nome da musica.";
-
-    if (selecionados.length === 0)
-      setErroForm("Selecione ao menos um bailarino.");
-
-    setErrors(novosErros);
-
-    return Object.keys(novosErros).length === 0 && selecionados.length > 0;
+    return Object.keys(novosErros).length === 0 && bailarinosSelecionados.length > 0;
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    if (isSubmitting) return;
+  async function enviarFormulario(evento: React.FormEvent) {
+    if (enviando) return;
 
-    e.preventDefault();
-    setErroForm(null);
+    evento.preventDefault();
+    setErroGeral(null);
 
     if (!validarFormulario()) return;
 
-    const duracaoSeg = duracaoEmSegundos(formData.duracao);
-    const limite = limiteDuracao(formData.formacao);
+    const duracaoSegundos = converterDuracaoParaSegundos(dadosFormulario.duracao);
+    const limite = limiteDuracao(dadosFormulario.formacao);
 
-    if (duracaoSeg === 0) {
-      setErrors((prev) => ({
-        ...prev,
-        duracao: "Formato invalido. Use MM:SS.",
+    if (duracaoSegundos === 0) {
+      setErrosFormulario((errosAtuais) => ({
+        ...errosAtuais,
+        duracao: "Formato inválido. Use MM:SS.",
       }));
       return;
     }
 
-    if (duracaoSeg > limite) {
-      setErrors((prev) => ({
-        ...prev,
-        duracao: "Duracao excede o limite permitido.",
+    if (duracaoSegundos > limite) {
+      setErrosFormulario((errosAtuais) => ({
+        ...errosAtuais,
+        duracao: "Duração excede o limite permitido.",
       }));
       return;
     }
 
     try {
-      setIsSubmitting(true);
-      const lote = obterLoteAtual();
-      const valor = calcularValorCoreografia(
-        formData.formacao,
-        selecionados.length,
-      );
+      setEnviando(true);
 
       const payload = {
-        ...formData,
-        duracao: converterParaFormatoBackend(formData.duracao),
-        bailarinosIds: selecionados,
-        lote,
-        valor,
+        ...dadosFormulario,
+        duracao: formatarDuracaoParaBackend(dadosFormulario.duracao),
+        bailarinosIds: bailarinosSelecionados,
+        lote: obterLoteAtual(),
+        valor: calcularValorCoreografia(
+          dadosFormulario.formacao,
+          bailarinosSelecionados.length,
+        ),
       };
 
       if (tipoInscricao === "escola") {
         await criarCoreografia(inscricaoId, payload);
-        navigate(`/inscricao/${inscricaoId}/resumo`);
+        navegar(`/inscricao/${inscricaoId}/resumo`);
       } else {
         await criarCoreografiaIndependente(inscricaoId, payload);
-        navigate(`/independentes/${inscricaoId}/resumo`);
+        navegar(`/independentes/${inscricaoId}/resumo`);
       }
-    } catch (error: any) {
-      setErroForm(error?.message || "Erro ao salvar coreografia.");
+    } catch (erro: any) {
+      setErroGeral(erro?.message || "Erro ao salvar coreografia.");
     } finally {
-      setIsSubmitting(false);
+      setEnviando(false);
     }
   }
 
-  const valorCoreografia =
-    formData.formacao && selecionados.length > 0
-      ? calcularValorCoreografia(formData.formacao, selecionados.length)
+  const valorCalculado =
+    dadosFormulario.formacao && bailarinosSelecionados.length > 0
+      ? calcularValorCoreografia(dadosFormulario.formacao, bailarinosSelecionados.length)
       : 0;
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-md">
-      {erroForm && (
-        <div className="p-3 rounded bg-red-500/10 text-red-400 text-sm">
-          {erroForm}
-        </div>
+    <form onSubmit={enviarFormulario} className="max-w-6xl">
+      {erroGeral && (
+        <div className="p-3 mb-4 rounded bg-red-500/10 text-red-400 text-sm">{erroGeral}</div>
       )}
 
-      <input
-        name="nome"
-        placeholder="Nome da coreografia"
-        value={formData.nome}
-        onChange={handleChange}
-        className="px-4 py-3 rounded bg-zinc-900 text-white"
-      />
-      {errors.nome && <p className="text-xs text-red-400">{errors.nome}</p>}
+      <div className="grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-8 items-start">
+        <div className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <input
+                name="nome"
+                placeholder="Nome da coreografia"
+                value={dadosFormulario.nome}
+                onChange={alterarCampo}
+                className="w-full px-4 py-3 rounded bg-zinc-900 text-white"
+              />
+              {errosFormulario.nome && (
+                <p className="text-xs text-red-400 mt-1">{errosFormulario.nome}</p>
+              )}
+            </div>
 
-      <input
-        name="nomeCoreografo"
-        placeholder="Nome do coreografo"
-        value={formData.nomeCoreografo}
-        onChange={handleChange}
-        className="px-4 py-3 rounded bg-zinc-900 text-white"
-      />
-      {errors.nomeCoreografo && (
-        <p className="text-xs text-red-400">{errors.nomeCoreografo}</p>
-      )}
+            <div>
+              <input
+                name="nomeCoreografo"
+                placeholder="Nome do coreógrafo"
+                value={dadosFormulario.nomeCoreografo}
+                onChange={alterarCampo}
+                className="w-full px-4 py-3 rounded bg-zinc-900 text-white"
+              />
+              {errosFormulario.nomeCoreografo && (
+                <p className="text-xs text-red-400 mt-1">{errosFormulario.nomeCoreografo}</p>
+              )}
+            </div>
 
-      <select
-        name="formacao"
-        value={formData.formacao}
-        onChange={handleChange}
-        className="px-4 py-3 rounded bg-zinc-900 text-white"
-      >
-        <option value="">Formação</option>
-        <option value="SOLO">Solo</option>
-        <option value="DUO">Duo</option>
-        <option value="TRIO">Trio</option>
-        <option value="GRUPO">Grupo</option>
-      </select>
-      {errors.formacao && (
-        <p className="text-xs text-red-400">{errors.formacao}</p>
-      )}
-
-      {formData.formacao && (
-        <div className="mt-6">
-          <h3 className="font-secondary font-semibold mb-3">
-            Selecionar bailarinos
-          </h3>
-
-          <ul className="flex flex-col gap-2">
-            {bailarinos.map((b) => (
-              <li
-                key={b.id}
-                onClick={() => toggleBailarino(b.id)}
-                className={`
-            px-4 py-2 rounded cursor-pointer
-            ${
-              selecionados.includes(b.id)
-                ? "bg-orange-500 text-black"
-                : "bg-zinc-900 text-white"
-            }
-          `}
+            <div>
+              <select
+                name="formacao"
+                value={dadosFormulario.formacao}
+                onChange={alterarCampo}
+                className="w-full px-4 py-3 rounded bg-zinc-900 text-white"
               >
-                {b.nomeArtistico || b.nomeCompleto}
-              </li>
-            ))}
-          </ul>
+                <option value="">Formação</option>
+                <option value="SOLO">Solo</option>
+                <option value="DUO">Duo</option>
+                <option value="TRIO">Trio</option>
+                <option value="GRUPO">Grupo</option>
+              </select>
+              {errosFormulario.formacao && (
+                <p className="text-xs text-red-400 mt-1">{errosFormulario.formacao}</p>
+              )}
+            </div>
 
-          <p className="text-sm text-gray-400 mt-2">
-            Selecionados: {selecionados.length}
-          </p>
+            <div>
+              <select
+                name="modalidade"
+                value={dadosFormulario.modalidade}
+                onChange={alterarCampo}
+                className="w-full px-4 py-3 rounded bg-zinc-900 text-white"
+              >
+                <option value="">Modalidade</option>
+                <option value="BALLET_CLASSICO">Ballet Clássico</option>
+                <option value="BALLET_NEOCLASSICO">Ballet Neoclássico</option>
+                <option value="JAZZ">Jazz</option>
+                <option value="CONTEMPORANEO">Contemporâneo</option>
+                <option value="DANCAS_URBANAS">Danças Urbanas</option>
+                <option value="SAPATEADO">Sapateado</option>
+                <option value="ESTILO_LIVRE">Estilo Livre</option>
+                <option value="OUTROS">Outros</option>
+              </select>
+              {errosFormulario.modalidade && (
+                <p className="text-xs text-red-400 mt-1">{errosFormulario.modalidade}</p>
+              )}
+            </div>
+
+            <div>
+              <select
+                name="categoria"
+                value={dadosFormulario.categoria}
+                onChange={alterarCampo}
+                className="w-full px-4 py-3 rounded bg-zinc-900 text-white"
+              >
+                <option value="">Categoria</option>
+                <option value="BABY">Baby</option>
+                <option value="INFANTIL_I">Infantil I</option>
+                <option value="INFANTIL_II">Infantil II</option>
+                <option value="JUVENIL_I">Juvenil I</option>
+                <option value="JUVENIL_II">Juvenil II</option>
+                <option value="ADULTO">Adulto</option>
+                <option value="ADULTO_INICIANTE">Adulto Iniciante</option>
+                <option value="SENIOR">Sênior</option>
+                <option value="MASTER">Master</option>
+              </select>
+              {errosFormulario.categoria && (
+                <p className="text-xs text-red-400 mt-1">{errosFormulario.categoria}</p>
+              )}
+            </div>
+
+            <div>
+              <input
+                name="duracao"
+                placeholder="Duração (MM:SS)"
+                value={dadosFormulario.duracao}
+                onChange={(evento) => alterarDuracao(evento.target.value)}
+                maxLength={5}
+                className="w-full px-4 py-3 rounded bg-zinc-900 text-white"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Consulte o regulamento para limites de duração.
+              </p>
+              {errosFormulario.duracao && (
+                <p className="text-xs text-red-400 mt-1">{errosFormulario.duracao}</p>
+              )}
+            </div>
+
+            <div className="md:col-span-2">
+              <input
+                name="musica"
+                placeholder="Música"
+                value={dadosFormulario.musica}
+                onChange={alterarCampo}
+                className="w-full px-4 py-3 rounded bg-zinc-900 text-white"
+              />
+              {errosFormulario.musica && (
+                <p className="text-xs text-red-400 mt-1">{errosFormulario.musica}</p>
+              )}
+            </div>
+
+            <label className="flex items-center gap-2 text-sm md:col-span-2">
+              <input
+                type="checkbox"
+                name="temCenario"
+                checked={dadosFormulario.temCenario}
+                onChange={alterarCampo}
+              />
+              Tem cenário?
+            </label>
+          </div>
+
+          <button
+            type="submit"
+            disabled={enviando}
+            className="px-6 py-3 rounded-lg bg-orange-500 text-black font-medium hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {enviando ? "Concluindo..." : "Salvar Coreografia"}
+          </button>
         </div>
-      )}
 
-      <select
-        name="modalidade"
-        value={formData.modalidade}
-        onChange={handleChange}
-        className="px-4 py-3 rounded bg-zinc-900 text-white"
-      >
-        <option value="">Modalidade</option>
-        <option value="BALLET_CLASSICO">Ballet Classico</option>
-        <option value="BALLET_NEOCLASSICO">Ballet Neoclassico</option>
-        <option value="JAZZ">Jazz</option>
-        <option value="CONTEMPORANEO">Contemporaneo</option>
-        <option value="DANCAS_URBANAS">Dancas Urbanas</option>
-        <option value="SAPATEADO">Sapateado</option>
-        <option value="ESTILO_LIVRE">Estilo Livre</option>
-        <option value="OUTROS">Outros</option>
-      </select>
+        <aside className="bg-zinc-900/70 border border-zinc-800 rounded-xl p-4 md:p-5">
+          <h3 className="font-secondary font-semibold mb-3">Selecionar bailarinos</h3>
 
-      <select
-        name="categoria"
-        value={formData.categoria}
-        onChange={handleChange}
-        className="px-4 py-3 rounded bg-zinc-900 text-white"
-      >
-        <option value="">Categoria</option>
-        <option value="BABY">Baby</option>
-        <option value="INFANTIL_I">Infantil I</option>
-        <option value="INFANTIL_II">Infantil II</option>
-        <option value="JUVENIL_I">Juvenil I</option>
-        <option value="JUVENIL_II">Juvenil II</option>
-        <option value="ADULTO">Adulto</option>
-        <option value="ADULTO_INICIANTE">Adulto Iniciante</option>
-        <option value="SENIOR">Senior</option>
-        <option value="MASTER">Master</option>
-      </select>
+          {dadosFormulario.formacao ? (
+            <ul className="grid sm:grid-cols-2 lg:grid-cols-1 gap-2">
+              {bailarinos.map((bailarino) => (
+                <li
+                  key={bailarino.id}
+                  onClick={() => selecionarBailarino(bailarino.id)}
+                  className={`px-4 py-2 rounded cursor-pointer transition ${
+                    bailarinosSelecionados.includes(bailarino.id)
+                      ? "bg-orange-500 text-black"
+                      : "bg-zinc-950 text-white border border-zinc-800"
+                  }`}
+                >
+                  {bailarino.nomeArtistico || bailarino.nomeCompleto}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-gray-400">Selecione a formação para liberar o elenco.</p>
+          )}
 
-      <input
-        name="duracao"
-        placeholder="Duração (MM:SS)"
-        value={formData.duracao}
-        onChange={(e) => handleDuracaoChange(e.target.value)}
-        maxLength={5}
-        className="px-4 py-3 rounded bg-zinc-900 text-white"
-      />
-      <label className="text-xs text-gray-400">
-        Consulte o regulamento para limites de duração.
-      </label>
-      {errors.duracao && (
-        <p className="text-xs text-red-400">{errors.duracao}</p>
-      )}
-
-      <input
-        name="musica"
-        placeholder="Musica"
-        value={formData.musica}
-        onChange={handleChange}
-        className="px-4 py-3 rounded bg-zinc-900 text-white"
-      />
-      {errors.musica && <p className="text-xs text-red-400">{errors.musica}</p>}
-
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          name="temCenario"
-          checked={formData.temCenario}
-          onChange={handleChange}
-        />
-        Tem cenario?
-      </label>
-
-      <p className="text-sm text-gray-400">
-        Lote atual: {obterLoteAtual()}º lote
-      </p>
-
-      {valorCoreografia > 0 && (
-        <div className="mt-4 p-4 rounded bg-zinc-900">
-          <p className="text-sm text-gray-300">Valor da coreografia</p>
-          <p className="text-2xl font-bold text-orange-500">
-            R$ {valorCoreografia}
+          <p className="text-sm text-gray-400 mt-3">
+            Selecionados: {bailarinosSelecionados.length}
           </p>
-        </div>
-      )}
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="mt-4 px-6 py-3 rounded-lg bg-orange-500 text-black font-medium hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed"
-      >
-        {isSubmitting ? "Concluindo..." : "Salvar Coreografia"}
-      </button>
+          <p className="text-sm text-gray-400 mt-2">Lote atual: {obterLoteAtual()}º lote</p>
+
+          {valorCalculado > 0 && (
+            <div className="mt-4 p-4 rounded bg-zinc-950 border border-zinc-800">
+              <p className="text-sm text-gray-300">Valor da coreografia</p>
+              <p className="text-2xl font-bold text-orange-500">R$ {valorCalculado}</p>
+            </div>
+          )}
+        </aside>
+      </div>
     </form>
   );
 }
