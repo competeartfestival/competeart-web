@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { buscarEscolaAdmin, listarEscolasAdmin } from "../lib/api";
+import HeaderSite from "../components/layout/HeaderSite";
+import FundoFestival from "../components/layout/FundoFestival";
 
 type InscricaoAdmin = {
   id: string;
@@ -50,8 +52,14 @@ export default function Admin() {
     detalheInscricao?.escola?.nome || detalheInscricao?.independente?.nomeResponsavel;
 
   return (
-    <main className="min-h-screen bg-black text-white px-6 py-8 md:py-10">
-      <div className="max-w-7xl mx-auto">
+    <main className="relative min-h-screen overflow-hidden bg-black text-white px-6 py-8 md:py-10">
+      <FundoFestival variante="admin" />
+
+      <div className="relative z-10 max-w-7xl mx-auto">
+        <div className="mb-6">
+          <HeaderSite />
+        </div>
+
         <h1 className="text-3xl font-primary text-orange-500 mb-8">Inscrições</h1>
 
         {carregandoLista ? (

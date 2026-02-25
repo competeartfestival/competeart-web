@@ -11,12 +11,14 @@ import AdminLogin from "./pages/AdminLogin";
 import ElencoIndependente from "./pages/ElencoIndependente";
 import CoreografiasIndependente from "./pages/CoreografiasIndependente";
 import ResumoIndependente from "./pages/ResumoIndependente";
+import Regulamento from "./pages/Regulamento";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/regulamento" element={<Regulamento />} />
         <Route path="/inscricao" element={<Inscricao />} />
         <Route path="/inscricao/escola" element={<InscricaoEscola />} />
         <Route

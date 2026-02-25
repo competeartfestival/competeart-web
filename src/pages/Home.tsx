@@ -1,33 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Volume2,
-  VolumeX,
-  ChevronRight,
-  Menu,
-  X,
-  Shield,
-  Users,
-  MapPin,
-  FileText,
-  Gavel,
-  Lock,
-} from "lucide-react";
+import { ChevronRight } from "lucide-react";
+import HeaderSite from "../components/layout/HeaderSite";
 
 const PALAVRAS_DINAMICAS = ["arte", "movimento", "palco", "competição"];
-const ITENS_MENU_BLOQUEADOS = [
-  { titulo: "Jurados", subtitulo: "Em breve", icone: Gavel },
-  { titulo: "Equipe", subtitulo: "Em breve", icone: Users },
-  { titulo: "Localização", subtitulo: "Em breve", icone: MapPin },
-  { titulo: "Regulamento", subtitulo: "Em breve", icone: FileText },
-];
 
 export default function Home() {
   const navegar = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const [muted, setMuted] = useState(true);
-  const [menuAberto, setMenuAberto] = useState(false);
   const [indicePalavra, setIndicePalavra] = useState(0);
   const [animarPalavra, setAnimarPalavra] = useState(false);
   const [videoFalhou, setVideoFalhou] = useState(false);
@@ -55,95 +36,20 @@ export default function Home() {
     if (!video) return;
 
     video.muted = true;
-    video
-      .play()
-      .catch(() => {
-        // Em alguns navegadores o autoplay pode falhar; mantemos fallback visual.
-      });
+    video.play().catch(() => {
+      // Fallback visual permanece quando autoplay for bloqueado.
+    });
   }, []);
 
   return (
     <section className="relative min-h-screen overflow-hidden bg-black">
-      <button
-        onClick={() => {
-          if (!videoRef.current) return;
-
-          const proximoMuted = !muted;
-          videoRef.current.muted = proximoMuted;
-          videoRef.current.volume = 0.4;
-          setMuted(proximoMuted);
-
-          if (!proximoMuted) {
-            videoRef.current.play().catch(() => undefined);
-          }
-        }}
-        className="absolute top-5 left-5 z-40 p-3 rounded-full border border-zinc-700 bg-black/70 text-white hover:bg-zinc-900 transition"
-      >
-        {muted ? <VolumeX size={15} /> : <Volume2 size={15} />}
-      </button>
-
-      <button
-        onClick={() => setMenuAberto((aberto) => !aberto)}
-        className="absolute top-5 right-5 z-40 p-3 rounded-full border border-zinc-700 bg-black/70 text-white hover:bg-zinc-900 transition"
-        aria-label="Abrir menu"
-      >
-        {menuAberto ? <X size={18} /> : <Menu size={18} />}
-      </button>
-
-      {menuAberto && (
-        <div className="absolute top-20 right-5 z-40 w-72 rounded-2xl border border-zinc-700 bg-zinc-950/95 backdrop-blur-md p-3 shadow-2xl">
-          <button
-            onClick={() => navegar("/admin/login")}
-            className="w-full text-left rounded-xl border border-zinc-800 bg-black/40 hover:bg-zinc-900 transition px-4 py-3 flex items-center gap-3"
-          >
-            <span className="w-9 h-9 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-300">
-              <Shield size={16} />
-            </span>
-            <span>
-              <span className="block text-sm font-medium text-white">Acesso administrativo</span>
-              <span className="block text-xs text-gray-400">Painel de inscrições</span>
-            </span>
-          </button>
-
-          <div className="my-3 h-px bg-zinc-800" />
-
-          <div className="space-y-2">
-            {ITENS_MENU_BLOQUEADOS.map((item) => {
-              const Icone = item.icone;
-
-              return (
-                <div
-                  key={item.titulo}
-                  className="w-full rounded-xl border border-zinc-800 bg-black/30 px-4 py-3 flex items-center gap-3 opacity-75"
-                >
-                  <span className="w-9 h-9 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300">
-                    <Icone size={16} />
-                  </span>
-                  <span className="flex-1">
-                    <span className="block text-sm font-medium text-white">
-                      {item.titulo}
-                    </span>
-                    <span className="block text-xs text-gray-400">
-                      {item.subtitulo}
-                    </span>
-                  </span>
-                  <span className="w-7 h-7 rounded-md border border-zinc-800 bg-zinc-950 flex items-center justify-center text-zinc-400">
-                    <Lock size={13} />
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       {!videoFalhou && (
         <video
           ref={videoRef}
           autoPlay
           loop
           playsInline
-          muted={muted}
+          muted
           preload="auto"
           poster="/assets/adminbg.jpg"
           onError={() => setVideoFalhou(true)}
@@ -158,12 +64,15 @@ export default function Home() {
       <div className="absolute inset-0 z-10 bg-[radial-gradient(circle_at_20%_25%,rgba(249,115,22,0.18),transparent_45%),radial-gradient(circle_at_80%_20%,rgba(244,114,182,0.14),transparent_40%),radial-gradient(circle_at_50%_90%,rgba(34,211,238,0.10),transparent_45%)]" />
       <div className="pointer-events-none absolute top-24 left-1/2 z-20 h-px w-[88%] -translate-x-1/2 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
 
-      <div className="relative z-30 min-h-screen px-6 py-10 md:px-10">
-        <div className="max-w-6xl mx-auto min-h-[calc(100vh-5rem)] grid lg:grid-cols-[1.15fr_0.85fr] gap-10 items-center">
+      <div className="relative z-30 min-h-screen px-6 py-6 md:px-10 md:py-8">
+        <div className="max-w-6xl mx-auto">
+          <HeaderSite sobreFundo />
+        </div>
+
+        <div className="max-w-6xl mx-auto min-h-[calc(100vh-6.5rem)] grid lg:grid-cols-[1.15fr_0.85fr] gap-10 items-center">
           <div className="text-center lg:text-left">
             <div className="relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-zinc-700 bg-zinc-950/80 px-4 py-2 text-xs tracking-[0.18em] uppercase text-gray-300">
               <span className="absolute inset-y-0 -left-10 w-16 bg-gradient-to-r from-transparent via-white/35 to-transparent varredura-luz" />
- 
               <span className="h-1.5 w-1.5 rounded-full bg-orange-300" />
               <span>Inscrições abertas</span>
             </div>
@@ -200,7 +109,7 @@ export default function Home() {
                 <ChevronRight size={18} />
               </button>
               <button
-                onClick={() => navegar("/inscricao")}
+                onClick={() => navegar("/regulamento")}
                 className="inline-flex items-center justify-center px-8 py-4 rounded-xl border border-zinc-600 bg-zinc-950/50 text-gray-200 hover:border-orange-400/40 hover:text-white transition"
               >
                 Ver regulamento
@@ -213,11 +122,11 @@ export default function Home() {
             <div className="relative rounded-3xl border border-zinc-700 bg-zinc-950/70 backdrop-blur-md p-5 md:p-6 shadow-2xl">
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div className="rounded-xl border border-zinc-800 bg-black/40 p-4">
-                  <p className="text-xs uppercase tracking-[0.16em] text-gray-400">data</p>
-                  <p className=" mt-2 text-sm text-white">19 de maio de 2026</p>
+                  <p className="text-xs uppercase tracking-[0.16em] text-gray-400">Data</p>
+                  <p className="mt-2 text-sm text-white">9 de maio de 2026</p>
                 </div>
                 <div className="rounded-xl border border-zinc-800 bg-black/40 p-4">
-                  <p className="text-xs uppercase tracking-[0.16em] text-gray-400">local</p>
+                  <p className="text-xs uppercase tracking-[0.16em] text-gray-400">Local</p>
                   <p className="mt-2 text-sm text-white">Teatro Castro Mendes em Campinas/SP</p>
                 </div>
               </div>
@@ -226,13 +135,23 @@ export default function Home() {
                 <p className="text-xs uppercase tracking-[0.2em] text-orange-300 mb-3">
                   Destaque Compete'Art
                 </p>
-                <p className="text-white text-lg md:text-sm leading-relaxed">
+                <p className="text-white text-base md:text-lg leading-relaxed">
                   Um encontro de talento, presença de palco e emoção. O Compete'Art celebra
                   coreografias que contam histórias, marcam o público e transformam performance
                   em experiência.
                 </p>
                 <div className="mt-5 h-px bg-gradient-to-r from-transparent via-zinc-600 to-transparent" />
-                
+                <div className="mt-4 grid sm:grid-cols-3 gap-2 text-sm">
+                  <div className="rounded-lg bg-zinc-900/80 border border-zinc-800 px-3 py-2 text-gray-300">
+                    Palco, luz e performance
+                  </div>
+                  <div className="rounded-lg bg-zinc-900/80 border border-zinc-800 px-3 py-2 text-gray-300">
+                    Escolas e talentos independentes
+                  </div>
+                  <div className="rounded-lg bg-zinc-900/80 border border-zinc-800 px-3 py-2 text-gray-300">
+                    Dança, arte e competição
+                  </div>
+                </div>
               </div>
             </div>
           </div>
