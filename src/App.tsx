@@ -13,6 +13,7 @@ import CoreografiasIndependente from "./pages/CoreografiasIndependente";
 import ResumoIndependente from "./pages/ResumoIndependente";
 import Regulamento from "./pages/Regulamento";
 import Jurados from "./pages/Jurados";
+import Localizacao from "./pages/Localizacao";
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/jurados" element={<Jurados />} />
+        <Route path="/localizacao" element={<Localizacao />} />
         <Route path="/regulamento" element={<Regulamento />} />
         <Route path="/inscricao" element={<Inscricao />} />
         <Route path="/inscricao/escola" element={<InscricaoEscola />} />

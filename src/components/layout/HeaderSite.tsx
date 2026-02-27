@@ -21,7 +21,6 @@ type ItemBloqueado = {
 
 const ITENS_BLOQUEADOS: ItemBloqueado[] = [
   { titulo: "Equipe", subtitulo: "Em breve", icone: Users },
-  { titulo: "Localização", subtitulo: "Em breve", icone: MapPin },
 ];
 
 interface HeaderSiteProps {
@@ -116,6 +115,15 @@ export default function HeaderSite({ className = "", sobreFundo = false }: Heade
               onClick={() => {
                 setMenuAberto(false);
                 navegar("/jurados");
+              }}
+            />
+            <ItemMenuAtivo
+              icone={MapPin}
+              titulo="Localização"
+              subtitulo="Como chegar ao teatro"
+              onClick={() => {
+                setMenuAberto(false);
+                navegar("/localizacao");
               }}
             />
             <ItemMenuAtivo
