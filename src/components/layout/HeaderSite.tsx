@@ -20,7 +20,6 @@ type ItemBloqueado = {
 };
 
 const ITENS_BLOQUEADOS: ItemBloqueado[] = [
-  { titulo: "Jurados", subtitulo: "Em breve", icone: Gavel },
   { titulo: "Equipe", subtitulo: "Em breve", icone: Users },
   { titulo: "Localização", subtitulo: "Em breve", icone: MapPin },
 ];
@@ -108,6 +107,15 @@ export default function HeaderSite({ className = "", sobreFundo = false }: Heade
               onClick={() => {
                 setMenuAberto(false);
                 navegar("/inscricao");
+              }}
+            />
+            <ItemMenuAtivo
+              icone={Gavel}
+              titulo="Jurados"
+              subtitulo="Conheça os avaliadores"
+              onClick={() => {
+                setMenuAberto(false);
+                navegar("/jurados");
               }}
             />
             <ItemMenuAtivo
