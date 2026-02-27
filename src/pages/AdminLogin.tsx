@@ -70,13 +70,13 @@ export default function AdminLogin() {
     <main className="relative min-h-screen text-white overflow-hidden">
       <FundoFestival variante="admin" />
 
-      <div className="relative z-10 px-6 py-6 md:px-10 md:py-8">
+      <div className="relative z-50 px-6 py-6 md:px-10 md:py-8">
         <div className="max-w-6xl mx-auto">
           <HeaderSite sobreFundo />
         </div>
       </div>
 
-      <div className="relative z-10 min-h-[calc(100vh-6rem)] px-6 md:px-10 pb-10 flex items-center">
+      <div className="relative z-20 min-h-[calc(100vh-6rem)] px-6 md:px-10 pb-10 flex items-center">
         <div className="mx-auto w-full max-w-6xl grid gap-5 lg:grid-cols-[1fr_0.95fr]">
           <section className="rounded-2xl border border-zinc-800 bg-zinc-950/70 backdrop-blur-md p-6 md:p-8 shadow-md">
             <div className="inline-flex items-center gap-2 rounded-full border border-orange-400/30 bg-orange-500/10 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-orange-200">
@@ -93,20 +93,6 @@ export default function AdminLogin() {
               consultar informações de escolas e bailarinos independentes.
             </p>
 
-            <div className="mt-6 grid sm:grid-cols-2 gap-3">
-              <div className="rounded-xl border border-zinc-800 bg-black/30 p-4">
-                <p className="text-xs uppercase tracking-[0.14em] text-gray-400">
-                  Gestão
-                </p>
-                <p className="mt-2 text-sm text-gray-200">Inscrições de escola e independentes</p>
-              </div>
-              <div className="rounded-xl border border-zinc-800 bg-black/30 p-4">
-                <p className="text-xs uppercase tracking-[0.14em] text-gray-400">
-                  Consulta
-                </p>
-                <p className="mt-2 text-sm text-gray-200">Valores, elenco e coreografias por inscrição</p>
-              </div>
-            </div>
           </section>
 
           <section className="rounded-2xl border border-zinc-700 bg-zinc-950/78 backdrop-blur-xl p-6 md:p-7 shadow-2xl">
