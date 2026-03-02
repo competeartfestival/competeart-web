@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Check, Copy } from "lucide-react";
 import { buscarEscolaAdmin, listarEscolasAdmin } from "../lib/api";
 import HeaderSite from "../components/layout/HeaderSite";
 import FundoFestival from "../components/layout/FundoFestival";
@@ -8,10 +9,11 @@ type InscricaoAdmin = {
   id: string;
   nome: string;
   limiteCoreografias: number;
+  bailarinosCadastrados: number;
   coreografiasCadastradas: number;
   valorTotal: number;
   tipoInscricao: "ESCOLA" | "BAILARINO_INDEPENDENTE";
-  status: "COMPLETA" | "EM_ANDAMENTO";
+  status: "FALTA_ELENCO" | "FALTA_COREOGRAFIA" | "COMPLETO";
 };
 
 export default function Admin() {
@@ -22,6 +24,7 @@ export default function Admin() {
   const [inscricoes, setInscricoes] = useState<InscricaoAdmin[]>([]);
   const [carregandoLista, setCarregandoLista] = useState(true);
   const [coreografiaSelecionada, setCoreografiaSelecionada] = useState<any>(null);
+  const [copiadoId, setCopiadoId] = useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("admin-token");
@@ -51,6 +54,49 @@ export default function Admin() {
   const tituloDetalhes =
     detalheInscricao?.escola?.nome || detalheInscricao?.independente?.nomeResponsavel;
 
+  function obterTextoStatus(status: InscricaoAdmin["status"]) {
+    if (status === "FALTA_ELENCO") return "FALTA ELENCO";
+    if (status === "FALTA_COREOGRAFIA") return "FALTA COREOGRAFIA";
+    return "COMPLETO";
+  }
+
+  function obterClasseStatus(status: InscricaoAdmin["status"]) {
+    if (status === "COMPLETO") {
+      return "border-emerald-400/40 bg-emerald-500/10 text-emerald-200";
+    }
+
+    if (status === "FALTA_COREOGRAFIA") {
+      return "border-amber-400/40 bg-amber-500/10 text-amber-100";
+    }
+
+    return "border-red-400/40 bg-red-500/10 text-red-100";
+  }
+
+  function gerarPathContinuacao(inscricao: InscricaoAdmin) {
+    const prefixo =
+      inscricao.tipoInscricao === "ESCOLA"
+        ? `/inscricao/${inscricao.id}`
+        : `/independentes/${inscricao.id}`;
+
+    if (inscricao.status === "FALTA_ELENCO") return `${prefixo}/elenco`;
+    if (inscricao.status === "FALTA_COREOGRAFIA") return `${prefixo}/coreografias`;
+    return `${prefixo}/resumo`;
+  }
+
+  async function copiarLinkContinuacao(inscricao: InscricaoAdmin) {
+    const link = `${window.location.origin}${gerarPathContinuacao(inscricao)}`;
+    try {
+      await navigator.clipboard.writeText(link);
+    } catch {
+      return;
+    }
+
+    setCopiadoId(inscricao.id);
+    window.setTimeout(() => {
+      setCopiadoId((atual) => (atual === inscricao.id ? null : atual));
+    }, 1800);
+  }
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-black text-white px-6 py-8 md:py-10">
       <FundoFestival variante="admin" />
@@ -73,32 +119,136 @@ export default function Admin() {
           <>
             <div className="mb-8 text-sm text-gray-400">Total: {inscricoes.length}</div>
 
-            <div className="grid xl:grid-cols-2 gap-4">
-              {inscricoes.map((inscricao) => (
-                <button
-                  key={inscricao.id}
-                  onClick={() => abrirDetalhes(inscricao.id)}
-                  className="text-left hover:bg-zinc-800 transition p-5 rounded-xl bg-zinc-900 flex justify-between items-center"
-                >
-                  <div>
-                    {inscricao.tipoInscricao === "ESCOLA" ? (
-                      <span className="px-2 py-1 rounded text-xs bg-orange-500 text-black font-semibold">
-                        ESCOLA
-                      </span>
-                    ) : (
-                      <span className="px-2 py-1 rounded text-xs border border-orange-500 text-orange-400 bg-black font-semibold">
-                        BAILARINO INDEPENDENTE
-                      </span>
-                    )}
+            <div className="hidden md:block overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950/70">
+              <table className="w-full text-left">
+                <thead className="bg-zinc-900/85 border-b border-zinc-800">
+                  <tr className="text-xs uppercase tracking-[0.12em] text-gray-400">
+                    <th className="px-4 py-3">Inscrição</th>
+                    <th className="px-4 py-3">Bailarinos</th>
+                    <th className="px-4 py-3">Coreografias</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Valor</th>
+                    <th className="px-4 py-3 text-right">Ação</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {inscricoes.map((inscricao) => (
+                    <tr key={inscricao.id} className="border-b border-zinc-900/80 last:border-b-0">
+                      <td className="px-4 py-4">
+                        <div className="flex flex-col gap-2">
+                          {inscricao.tipoInscricao === "ESCOLA" ? (
+                            <span className="w-fit px-2 py-1 rounded text-[11px] bg-orange-500 text-black font-semibold">
+                              ESCOLA
+                            </span>
+                          ) : (
+                            <span className="w-fit px-2 py-1 rounded text-[11px] border border-orange-500 text-orange-400 bg-black font-semibold">
+                              BAILARINO INDEPENDENTE
+                            </span>
+                          )}
+                          <button
+                            onClick={() => abrirDetalhes(inscricao.id)}
+                            className="font-secondary text-base text-white hover:text-orange-300 text-left transition"
+                          >
+                            {inscricao.nome}
+                          </button>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-sm text-gray-300">
+                        {inscricao.bailarinosCadastrados}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-gray-300">
+                        {inscricao.coreografiasCadastradas}
+                      </td>
+                      <td className="px-4 py-4">
+                        <span
+                          className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${obterClasseStatus(
+                            inscricao.status,
+                          )}`}
+                        >
+                          {obterTextoStatus(inscricao.status)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-sm font-semibold text-orange-300">
+                        R$ {inscricao.valorTotal}
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex justify-end">
+                          <button
+                            onClick={() => copiarLinkContinuacao(inscricao)}
+                            className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition ${
+                              copiadoId === inscricao.id
+                                ? "border-emerald-400/40 bg-emerald-500/10 text-emerald-100"
+                                : "border-zinc-700 bg-zinc-900 text-gray-200 hover:border-orange-400/40 hover:text-white"
+                            }`}
+                          >
+                            {copiadoId === inscricao.id ? <Check size={14} /> : <Copy size={14} />}
+                            {copiadoId === inscricao.id ? "Copiado" : "Copiar link"}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-                    <h2 className="font-secondary text-lg mt-3">{inscricao.nome}</h2>
-                    <p className="text-sm text-gray-400 mt-1">
-                      {inscricao.coreografiasCadastradas} coreografias
-                    </p>
+            <div className="grid gap-4 md:hidden">
+              {inscricoes.map((inscricao) => (
+                <div key={inscricao.id} className="rounded-xl border border-zinc-800 bg-zinc-900/80 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      {inscricao.tipoInscricao === "ESCOLA" ? (
+                        <span className="px-2 py-1 rounded text-[11px] bg-orange-500 text-black font-semibold">
+                          ESCOLA
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 rounded text-[11px] border border-orange-500 text-orange-400 bg-black font-semibold">
+                          BAILARINO INDEPENDENTE
+                        </span>
+                      )}
+                      <button
+                        onClick={() => abrirDetalhes(inscricao.id)}
+                        className="block mt-3 font-secondary text-base text-left hover:text-orange-300 transition"
+                      >
+                        {inscricao.nome}
+                      </button>
+                    </div>
+                    <span
+                      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold ${obterClasseStatus(
+                        inscricao.status,
+                      )}`}
+                    >
+                      {obterTextoStatus(inscricao.status)}
+                    </span>
                   </div>
 
-                  <p className="text-orange-500 font-bold text-lg">R$ {inscricao.valorTotal}</p>
-                </button>
+                  <div className="mt-3 grid grid-cols-3 gap-2 text-xs text-gray-300">
+                    <div className="rounded-lg bg-black/30 border border-zinc-800 px-2 py-2 text-center">
+                      <p className="text-gray-500">Elenco</p>
+                      <p className="mt-1 font-semibold">{inscricao.bailarinosCadastrados}</p>
+                    </div>
+                    <div className="rounded-lg bg-black/30 border border-zinc-800 px-2 py-2 text-center">
+                      <p className="text-gray-500">Coreografias</p>
+                      <p className="mt-1 font-semibold">{inscricao.coreografiasCadastradas}</p>
+                    </div>
+                    <div className="rounded-lg bg-black/30 border border-zinc-800 px-2 py-2 text-center">
+                      <p className="text-gray-500">Valor</p>
+                      <p className="mt-1 font-semibold text-orange-300">R$ {inscricao.valorTotal}</p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => copiarLinkContinuacao(inscricao)}
+                    className={`mt-4 w-full inline-flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                      copiadoId === inscricao.id
+                        ? "border-emerald-400/40 bg-emerald-500/10 text-emerald-100"
+                        : "border-zinc-700 bg-zinc-900 text-gray-200 hover:border-orange-400/40 hover:text-white"
+                    }`}
+                  >
+                    {copiadoId === inscricao.id ? <Check size={15} /> : <Copy size={15} />}
+                    {copiadoId === inscricao.id ? "Link copiado" : "Copiar link"}
+                  </button>
+                </div>
               ))}
             </div>
           </>
