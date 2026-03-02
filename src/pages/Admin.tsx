@@ -34,7 +34,8 @@ export default function Admin() {
   const [inscricoes, setInscricoes] = useState<InscricaoAdmin[]>([]);
   const [carregandoLista, setCarregandoLista] = useState(true);
 
-  const [inscricaoSelecionada, setInscricaoSelecionada] = useState<InscricaoAdmin | null>(null);
+  const [inscricaoSelecionada, setInscricaoSelecionada] =
+    useState<InscricaoAdmin | null>(null);
   const [detalheInscricao, setDetalheInscricao] = useState<any>(null);
   const [elencoCompleto, setElencoCompleto] = useState<BailarinoResumo[]>([]);
   const [carregandoPainel, setCarregandoPainel] = useState(false);
@@ -91,7 +92,8 @@ export default function Admin() {
         : `/independentes/${inscricao.id}`;
 
     if (inscricao.status === "FALTA_ELENCO") return `${prefixo}/elenco`;
-    if (inscricao.status === "FALTA_COREOGRAFIA") return `${prefixo}/coreografias`;
+    if (inscricao.status === "FALTA_COREOGRAFIA")
+      return `${prefixo}/coreografias`;
     return `${prefixo}/resumo`;
   }
 
@@ -99,7 +101,10 @@ export default function Admin() {
     return `${window.location.origin}${gerarPathContinuacao(inscricao)}`;
   }
 
-  async function copiarLinkContinuacao(inscricao: InscricaoAdmin, evento?: MouseEvent) {
+  async function copiarLinkContinuacao(
+    inscricao: InscricaoAdmin,
+    evento?: MouseEvent,
+  ) {
     evento?.stopPropagation();
 
     const link = gerarLinkRecuperacao(inscricao);
@@ -146,9 +151,21 @@ export default function Admin() {
 
   const tituloPainel = useMemo(() => {
     if (detalheInscricao?.escola?.nome) return detalheInscricao.escola.nome;
-    if (detalheInscricao?.independente?.nomeResponsavel) return detalheInscricao.independente.nomeResponsavel;
+    if (detalheInscricao?.independente?.nomeResponsavel)
+      return detalheInscricao.independente.nomeResponsavel;
     return inscricaoSelecionada?.nome ?? "Detalhes da inscrição";
   }, [detalheInscricao, inscricaoSelecionada]);
+
+  const valorCoreografiasDetalhe = detalheInscricao?.valores?.coreografias ?? 0;
+  const valorProfissionaisExtrasDetalhe =
+    detalheInscricao?.valores?.profissionaisExtras ??
+    detalheInscricao?.valores?.assistentesExtras ??
+    0;
+  const qtdProfissionaisExtrasDetalhe =
+    detalheInscricao?.totais?.profissionaisExtras ??
+    detalheInscricao?.totais?.assistentesExtras ??
+    0;
+  const valorTotalDetalhe = detalheInscricao?.valores?.total ?? 0;
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-black text-white px-6 py-8 md:py-10">
@@ -160,7 +177,9 @@ export default function Admin() {
         </div>
 
         <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-primary text-orange-400">Painel de inscrições</h1>
+          <h1 className="text-2xl md:text-3xl font-primary text-orange-400">
+            Painel de inscrições
+          </h1>
           <p className="mt-2 text-sm text-zinc-300">
             Visualização técnica do andamento dos cadastros.
           </p>
@@ -177,13 +196,17 @@ export default function Admin() {
                   <th className="px-4 py-3 text-left font-medium">Status</th>
                   <th className="px-4 py-3 text-left font-medium">Progresso</th>
                   <th className="px-4 py-3 text-left font-medium">Valor</th>
-                  <th className="px-4 py-3 text-right font-medium hidden md:table-cell">Link para continuar</th>
+                  <th className="px-4 py-3 text-right font-medium hidden md:table-cell">
+                    Link para continuar
+                  </th>
                 </tr>
               </thead>
 
               <tbody>
                 {inscricoes.map((inscricao) => {
-                  const etapasConcluidas = obterEtapasConcluidas(inscricao.status);
+                  const etapasConcluidas = obterEtapasConcluidas(
+                    inscricao.status,
+                  );
                   const percentual = (etapasConcluidas / 3) * 100;
 
                   return (
@@ -193,20 +216,32 @@ export default function Admin() {
                       className="border-b border-zinc-900/90 last:border-b-0 hover:bg-zinc-900/45 cursor-pointer"
                     >
                       <td className="px-4 py-3.5">
-                        <p className="text-sm text-white font-medium">{inscricao.nome}</p>
+                        <p className="text-sm text-white font-medium">
+                          {inscricao.nome}
+                        </p>
                         <p className="mt-1 text-xs text-zinc-400">
-                          {inscricao.tipoInscricao === "ESCOLA" ? "Escola" : "Bailarino independente"}
+                          {inscricao.tipoInscricao === "ESCOLA"
+                            ? "Escola"
+                            : "Bailarino independente"}
                         </p>
                         <button
-                          onClick={(evento) => copiarLinkContinuacao(inscricao, evento)}
+                          onClick={(evento) =>
+                            copiarLinkContinuacao(inscricao, evento)
+                          }
                           className={`mt-2 inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs transition md:hidden ${
                             copiadoId === inscricao.id
                               ? "border-emerald-300/40 bg-emerald-500/10 text-emerald-100"
                               : "border-zinc-700 bg-zinc-900 text-zinc-200"
                           }`}
                         >
-                          {copiadoId === inscricao.id ? <Check size={13} /> : <Copy size={13} />}
-                          {copiadoId === inscricao.id ? "Copiado!" : "Copiar link"}
+                          {copiadoId === inscricao.id ? (
+                            <Check size={13} />
+                          ) : (
+                            <Copy size={13} />
+                          )}
+                          {copiadoId === inscricao.id
+                            ? "Copiado!"
+                            : "Copiar link"}
                         </button>
                       </td>
 
@@ -218,7 +253,9 @@ export default function Admin() {
                         >
                           {obterTextoStatus(inscricao.status)}
                         </span>
-                        <p className="mt-1 text-xs text-zinc-400">{obterDetalheStatus(inscricao.status)}</p>
+                        <p className="mt-1 text-xs text-zinc-400">
+                          {obterDetalheStatus(inscricao.status)}
+                        </p>
                       </td>
 
                       <td className="px-4 py-3.5">
@@ -229,7 +266,9 @@ export default function Admin() {
                               style={{ width: `${percentual}%` }}
                             />
                           </div>
-                          <p className="mt-1 text-xs text-zinc-400">{etapasConcluidas}/3 etapas</p>
+                          <p className="mt-1 text-xs text-zinc-400">
+                            {etapasConcluidas}/3 etapas
+                          </p>
                         </div>
                       </td>
 
@@ -240,15 +279,23 @@ export default function Admin() {
                       <td className="px-4 py-3.5 hidden md:table-cell">
                         <div className="flex justify-end gap-2">
                           <button
-                            onClick={(evento) => copiarLinkContinuacao(inscricao, evento)}
+                            onClick={(evento) =>
+                              copiarLinkContinuacao(inscricao, evento)
+                            }
                             className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs transition ${
                               copiadoId === inscricao.id
                                 ? "border-emerald-300/40 bg-emerald-500/10 text-emerald-100"
                                 : "border-zinc-700 bg-zinc-900 text-zinc-200 hover:border-orange-300/45"
                             }`}
                           >
-                            {copiadoId === inscricao.id ? <Check size={13} /> : <Copy size={13} />}
-                            {copiadoId === inscricao.id ? "Copiado!" : "Copiar link"}
+                            {copiadoId === inscricao.id ? (
+                              <Check size={13} />
+                            ) : (
+                              <Copy size={13} />
+                            )}
+                            {copiadoId === inscricao.id
+                              ? "Copiado!"
+                              : "Copiar link"}
                           </button>
                         </div>
                       </td>
@@ -273,9 +320,15 @@ export default function Admin() {
             <div className="sticky top-0 z-10 border-b border-zinc-800 bg-zinc-950/95 px-5 py-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.14em] text-orange-300">Detalhes rápidos</p>
-                  <h2 className="mt-1 text-xl font-semibold text-white">{tituloPainel}</h2>
-                  <p className="mt-1 text-xs text-zinc-400">{inscricaoSelecionada.id}</p>
+                  <p className="text-xs uppercase tracking-[0.14em] text-orange-300">
+                    Detalhes rápidos
+                  </p>
+                  <h2 className="mt-1 text-xl font-semibold text-white">
+                    {tituloPainel}
+                  </h2>
+                  <p className="mt-1 text-xs text-zinc-400">
+                    {inscricaoSelecionada.id}
+                  </p>
                 </div>
 
                 <button
@@ -293,34 +346,49 @@ export default function Admin() {
               ) : (
                 <>
                   <section className="rounded-xl border border-zinc-800 bg-zinc-900/45 p-4">
-                    <h3 className="text-xs uppercase tracking-[0.14em] text-zinc-400">Resumo</h3>
+                    <h3 className="text-xs uppercase tracking-[0.14em] text-zinc-400">
+                      Resumo
+                    </h3>
                     <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
                       <div className="rounded-lg border border-zinc-800 bg-black/20 px-3 py-2">
                         <p className="text-xs text-zinc-500">Elenco</p>
-                        <p className="mt-1 text-zinc-100 font-medium">{elencoCompleto.length}</p>
+                        <p className="mt-1 text-zinc-100 font-medium">
+                          {elencoCompleto.length}
+                        </p>
                       </div>
                       <div className="rounded-lg border border-zinc-800 bg-black/20 px-3 py-2">
                         <p className="text-xs text-zinc-500">Coreografias</p>
                         <p className="mt-1 text-zinc-100 font-medium">
-                          {detalheInscricao?.detalhamento?.coreografias?.length ?? 0}
+                          {detalheInscricao?.detalhamento?.coreografias
+                            ?.length ?? 0}
                         </p>
                       </div>
                     </div>
                   </section>
 
                   <section className="rounded-xl border border-zinc-800 bg-zinc-900/45 p-4">
-                    <h3 className="text-xs uppercase tracking-[0.14em] text-zinc-400">Elenco</h3>
+                    <h3 className="text-xs uppercase tracking-[0.14em] text-zinc-400">
+                      Elenco
+                    </h3>
                     {elencoCompleto.length === 0 ? (
-                      <p className="mt-3 text-zinc-500">Nenhum bailarino cadastrado.</p>
+                      <p className="mt-3 text-zinc-500">
+                        Nenhum bailarino cadastrado.
+                      </p>
                     ) : (
                       <div className="mt-3 grid sm:grid-cols-2 gap-2">
                         {elencoCompleto.map((bailarino) => (
-                          <div key={bailarino.id} className="rounded-lg border border-zinc-800 bg-black/20 px-3 py-2">
+                          <div
+                            key={bailarino.id}
+                            className="rounded-lg border border-zinc-800 bg-black/20 px-3 py-2"
+                          >
                             <p className="text-zinc-100 font-medium">
-                              {bailarino.nomeArtistico || bailarino.nomeCompleto}
+                              {bailarino.nomeArtistico ||
+                                bailarino.nomeCompleto}
                             </p>
                             {bailarino.nomeArtistico && (
-                              <p className="text-xs text-zinc-500">{bailarino.nomeCompleto}</p>
+                              <p className="text-xs text-zinc-500">
+                                {bailarino.nomeCompleto}
+                              </p>
                             )}
                           </div>
                         ))}
@@ -329,28 +397,80 @@ export default function Admin() {
                   </section>
 
                   <section className="rounded-xl border border-zinc-800 bg-zinc-900/45 p-4">
-                    <h3 className="text-xs uppercase tracking-[0.14em] text-zinc-400">Coreografias</h3>
-                    {(detalheInscricao?.detalhamento?.coreografias?.length ?? 0) === 0 ? (
-                      <p className="mt-3 text-zinc-500">Nenhuma coreografia cadastrada.</p>
+                    <h3 className="text-xs uppercase tracking-[0.14em] text-zinc-400">
+                      Coreografias
+                    </h3>
+                    {(detalheInscricao?.detalhamento?.coreografias?.length ??
+                      0) === 0 ? (
+                      <p className="mt-3 text-zinc-500">
+                        Nenhuma coreografia cadastrada.
+                      </p>
                     ) : (
                       <div className="mt-3 space-y-2">
-                        {detalheInscricao.detalhamento.coreografias.map((coreografia: any) => (
-                          <div key={coreografia.id} className="rounded-lg border border-zinc-800 bg-black/20 px-3 py-3">
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
-                                <p className="text-zinc-100 font-medium">{coreografia.nome}</p>
-                                <p className="mt-1 text-xs text-zinc-500">
-                                  {coreografia.formacao} • {coreografia.modalidade} • {coreografia.bailarinos} bailarinos
+                        {detalheInscricao.detalhamento.coreografias.map(
+                          (coreografia: any) => (
+                            <div
+                              key={coreografia.id}
+                              className="rounded-lg border border-zinc-800 bg-black/20 px-3 py-3"
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <p className="text-zinc-100 font-medium">
+                                    {coreografia.nome}
+                                  </p>
+                                  <p className="mt-1 text-xs text-zinc-500">
+                                    {coreografia.formacao} •{" "}
+                                    {coreografia.modalidade} •{" "}
+                                    {coreografia.bailarinos} bailarinos
+                                  </p>
+                                </div>
+                                <p className="text-xs text-orange-200 font-medium">
+                                  {formatarMoeda(coreografia.valor)}
                                 </p>
                               </div>
-                            <p className="text-xs text-orange-200 font-medium">
-                              {formatarMoeda(coreografia.valor)}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
+                            </div>
+                          ),
+                        )}
                       </div>
                     )}
+                  </section>
+
+                  <section className="rounded-xl border border-zinc-800 bg-zinc-900/45 p-4">
+                    <h3 className="text-xs uppercase tracking-[0.14em] text-zinc-400">
+                      Composição do valor
+                    </h3>
+
+                    <div className="mt-3 space-y-2 text-sm">
+                      <div className="flex items-center justify-between rounded-lg border border-zinc-800 bg-black/20 px-3 py-2">
+                        <span className="text-zinc-300">
+                          Subtotal coreografias
+                        </span>
+                        <span className="font-medium text-zinc-100">
+                          {formatarMoeda(valorCoreografiasDetalhe)}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between rounded-lg border border-zinc-800 bg-black/20 px-3 py-2">
+                        <span className="text-zinc-300">
+                          Profissionais extras
+                          {qtdProfissionaisExtrasDetalhe > 0
+                            ? ` (${qtdProfissionaisExtrasDetalhe} x R$ 70,00)`
+                            : ""}
+                        </span>
+                        <span className="font-medium text-zinc-100">
+                          {formatarMoeda(valorProfissionaisExtrasDetalhe)}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between rounded-lg border border-orange-300/25 bg-orange-500/10 px-3 py-2">
+                        <span className="font-medium text-orange-100">
+                          Total
+                        </span>
+                        <span className="font-semibold text-orange-100">
+                          {formatarMoeda(valorTotalDetalhe)}
+                        </span>
+                      </div>
+                    </div>
                   </section>
                 </>
               )}
