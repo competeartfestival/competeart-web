@@ -1,9 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import type { MouseEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, Copy, X } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Copy,
+  Trash2,
+  X,
+} from "lucide-react";
 import {
   buscarEscolaAdmin,
+  excluirInscricaoAdmin,
   listarBailarinos,
   listarBailarinosIndependente,
   listarEscolasAdmin,
@@ -14,6 +21,7 @@ import FundoFestival from "../components/layout/FundoFestival";
 type InscricaoAdmin = {
   id: string;
   nome: string;
+  dataInscricao: string;
   limiteCoreografias: number;
   bailarinosCadastrados: number;
   coreografiasCadastradas: number;
@@ -39,8 +47,19 @@ export default function Admin() {
   const [detalheInscricao, setDetalheInscricao] = useState<any>(null);
   const [elencoCompleto, setElencoCompleto] = useState<BailarinoResumo[]>([]);
   const [carregandoPainel, setCarregandoPainel] = useState(false);
+  const [inscricaoParaExcluir, setInscricaoParaExcluir] =
+    useState<InscricaoAdmin | null>(null);
+  const [excluindoId, setExcluindoId] = useState<string | null>(null);
+  const [erroExclusao, setErroExclusao] = useState<string | null>(null);
 
   const [copiadoId, setCopiadoId] = useState<string | null>(null);
+  const [termoBusca, setTermoBusca] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState<
+    "TODOS" | "FALTA_ELENCO" | "FALTA_COREOGRAFIA" | "COMPLETO"
+  >("TODOS");
+  const [ordenacao, setOrdenacao] = useState<
+    "NOME_AZ" | "NOME_ZA" | "DATA_ANTIGA" | "DATA_RECENTE"
+  >("DATA_RECENTE");
 
   function formatarMoeda(valor: number) {
     return new Intl.NumberFormat("pt-BR", {
@@ -48,6 +67,16 @@ export default function Admin() {
       currency: "BRL",
       minimumFractionDigits: 2,
     }).format(valor);
+  }
+
+  function formatarData(dataIso: string) {
+    return new Intl.DateTimeFormat("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(dataIso));
   }
 
   useEffect(() => {
@@ -149,6 +178,41 @@ export default function Admin() {
     setCarregandoPainel(false);
   }
 
+  function abrirModalExclusao(inscricao: InscricaoAdmin, evento?: MouseEvent) {
+    evento?.stopPropagation();
+    setErroExclusao(null);
+    setInscricaoParaExcluir(inscricao);
+  }
+
+  function fecharModalExclusao() {
+    if (excluindoId) return;
+    setInscricaoParaExcluir(null);
+  }
+
+  async function confirmarExclusao() {
+    if (!inscricaoParaExcluir || excluindoId) return;
+
+    const id = inscricaoParaExcluir.id;
+    setExcluindoId(id);
+    setErroExclusao(null);
+
+    try {
+      await excluirInscricaoAdmin(id);
+
+      setInscricoes((atuais) => atuais.filter((item) => item.id !== id));
+
+      if (inscricaoSelecionada?.id === id) {
+        fecharPainel();
+      }
+
+      setInscricaoParaExcluir(null);
+    } catch (error: any) {
+      setErroExclusao(error?.message || "Não foi possível excluir a inscrição.");
+    } finally {
+      setExcluindoId(null);
+    }
+  }
+
   const tituloPainel = useMemo(() => {
     if (detalheInscricao?.escola?.nome) return detalheInscricao.escola.nome;
     if (detalheInscricao?.independente?.nomeResponsavel)
@@ -166,6 +230,34 @@ export default function Admin() {
     detalheInscricao?.totais?.assistentesExtras ??
     0;
   const valorTotalDetalhe = detalheInscricao?.valores?.total ?? 0;
+  const inscricoesFiltradasOrdenadas = useMemo(() => {
+    const termo = termoBusca.trim().toLowerCase();
+
+    const filtradas = inscricoes.filter((inscricao) => {
+      const bateBusca =
+        termo.length === 0 || inscricao.nome.toLowerCase().includes(termo);
+      const bateStatus =
+        filtroStatus === "TODOS" || inscricao.status === filtroStatus;
+
+      return bateBusca && bateStatus;
+    });
+
+    return filtradas.sort((a, b) => {
+      if (ordenacao === "NOME_AZ") {
+        return a.nome.localeCompare(b.nome, "pt-BR");
+      }
+
+      if (ordenacao === "NOME_ZA") {
+        return b.nome.localeCompare(a.nome, "pt-BR");
+      }
+
+      const dataA = new Date(a.dataInscricao).getTime();
+      const dataB = new Date(b.dataInscricao).getTime();
+
+      if (ordenacao === "DATA_ANTIGA") return dataA - dataB;
+      return dataB - dataA;
+    });
+  }, [inscricoes, termoBusca, filtroStatus, ordenacao]);
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-black text-white px-6 py-8 md:py-10">
@@ -185,6 +277,53 @@ export default function Admin() {
           </p>
         </div>
 
+        <div className="mb-4 grid gap-2 md:grid-cols-3">
+          <input
+            value={termoBusca}
+            onChange={(evento) => setTermoBusca(evento.target.value)}
+            placeholder="Pesquisar por nome da escola ou responsável"
+            className="h-10 rounded-lg border border-zinc-700 bg-zinc-900 px-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-orange-300/45"
+          />
+
+          <select
+            value={filtroStatus}
+            onChange={(evento) =>
+              setFiltroStatus(
+                evento.target.value as
+                  | "TODOS"
+                  | "FALTA_ELENCO"
+                  | "FALTA_COREOGRAFIA"
+                  | "COMPLETO",
+              )
+            }
+            className="h-10 rounded-lg border border-zinc-700 bg-zinc-900 px-3 text-sm text-white focus:outline-none focus:border-orange-300/45"
+          >
+            <option value="TODOS">Filtrar status: Todos</option>
+            <option value="FALTA_ELENCO">Filtrar status: Falta elenco</option>
+            <option value="FALTA_COREOGRAFIA">Filtrar status: Falta coreografia</option>
+            <option value="COMPLETO">Filtrar status: Completo</option>
+          </select>
+
+          <select
+            value={ordenacao}
+            onChange={(evento) =>
+              setOrdenacao(
+                evento.target.value as
+                  | "NOME_AZ"
+                  | "NOME_ZA"
+                  | "DATA_ANTIGA"
+                  | "DATA_RECENTE",
+              )
+            }
+            className="h-10 rounded-lg border border-zinc-700 bg-zinc-900 px-3 text-sm text-white focus:outline-none focus:border-orange-300/45"
+          >
+            <option value="NOME_AZ">Ordenar por: Nome (A-Z)</option>
+            <option value="NOME_ZA">Ordenar por: Nome (Z-A)</option>
+            <option value="DATA_ANTIGA">Ordenar por: Data (mais antiga)</option>
+            <option value="DATA_RECENTE">Ordenar por: Data (mais recente)</option>
+          </select>
+        </div>
+
         {carregandoLista ? (
           <p className="text-sm text-zinc-400">Carregando inscrições...</p>
         ) : (
@@ -193,17 +332,18 @@ export default function Admin() {
               <thead className="bg-zinc-900/85">
                 <tr className="border-b border-zinc-800 text-zinc-400">
                   <th className="px-4 py-3 text-left font-medium">Nome</th>
+                  <th className="px-4 py-3 text-left font-medium">Data inscrição</th>
                   <th className="px-4 py-3 text-left font-medium">Status</th>
                   <th className="px-4 py-3 text-left font-medium">Progresso</th>
                   <th className="px-4 py-3 text-left font-medium">Valor</th>
                   <th className="px-4 py-3 text-right font-medium hidden md:table-cell">
-                    Link para continuar
+                    Ações
                   </th>
                 </tr>
               </thead>
 
               <tbody>
-                {inscricoes.map((inscricao) => {
+                {inscricoesFiltradasOrdenadas.map((inscricao) => {
                   const etapasConcluidas = obterEtapasConcluidas(
                     inscricao.status,
                   );
@@ -243,6 +383,19 @@ export default function Admin() {
                             ? "Copiado!"
                             : "Copiar link"}
                         </button>
+                        <button
+                          onClick={(evento) =>
+                            abrirModalExclusao(inscricao, evento)
+                          }
+                          className="mt-2 ml-2 inline-flex items-center gap-1.5 rounded-md border border-red-300/35 bg-red-500/10 px-2.5 py-1.5 text-xs text-red-100 transition hover:bg-red-500/20 md:hidden"
+                        >
+                          <Trash2 size={13} />
+                          Excluir
+                        </button>
+                      </td>
+
+                      <td className="px-4 py-3.5 text-xs text-zinc-300">
+                        {formatarData(inscricao.dataInscricao)}
                       </td>
 
                       <td className="px-4 py-3.5">
@@ -297,11 +450,28 @@ export default function Admin() {
                               ? "Copiado!"
                               : "Copiar link"}
                           </button>
+                          <button
+                            onClick={(evento) =>
+                              abrirModalExclusao(inscricao, evento)
+                            }
+                            className="inline-flex items-center gap-1.5 rounded-md border border-red-300/35 bg-red-500/10 px-3 py-1.5 text-xs text-red-100 transition hover:bg-red-500/20"
+                          >
+                            <Trash2 size={13} />
+                            Excluir
+                          </button>
                         </div>
                       </td>
                     </tr>
                   );
                 })}
+
+                {inscricoesFiltradasOrdenadas.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center text-sm text-zinc-500">
+                      Nenhuma inscrição encontrada com os filtros atuais.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -366,6 +536,140 @@ export default function Admin() {
                     </div>
                   </section>
 
+                  {detalheInscricao?.escola ? (
+                    <section className="rounded-xl border border-zinc-800 bg-zinc-900/45 p-4">
+                      <h3 className="text-xs uppercase tracking-[0.14em] text-zinc-400">
+                        Dados da escola
+                      </h3>
+
+                      <div className="mt-3 grid sm:grid-cols-2 gap-2 text-sm">
+                        <div className="rounded-lg border border-zinc-800 bg-black/20 px-3 py-2">
+                          <p className="text-xs text-zinc-500">
+                            Nome da escola
+                          </p>
+                          <p className="mt-1 text-zinc-100">
+                            {detalheInscricao.escola.nome}
+                          </p>
+                        </div>
+                        <div className="rounded-lg border border-zinc-800 bg-black/20 px-3 py-2">
+                          <p className="text-xs text-zinc-500">E-mail</p>
+                          <p className="mt-1 text-zinc-100">
+                            {detalheInscricao.escola.email}
+                          </p>
+                        </div>
+                        <div className="rounded-lg border border-zinc-800 bg-black/20 px-3 py-2">
+                          <p className="text-xs text-zinc-500">WhatsApp</p>
+                          <p className="mt-1 text-zinc-100">
+                            {detalheInscricao.escola.whatsapp}
+                          </p>
+                        </div>
+                        <div className="rounded-lg border border-zinc-800 bg-black/20 px-3 py-2">
+                          <p className="text-xs text-zinc-500">Direção</p>
+                          <p className="mt-1 text-zinc-100">
+                            {detalheInscricao.escola.nomeDiretor}
+                          </p>
+                        </div>
+                        <div className="rounded-lg border border-zinc-800 bg-black/20 px-3 py-2 sm:col-span-2">
+                          <p className="text-xs text-zinc-500">Endereço</p>
+                          <p className="mt-1 text-zinc-100">
+                            {detalheInscricao.escola.endereco}
+                          </p>
+                        </div>
+                        <div className="rounded-lg border border-zinc-800 bg-black/20 px-3 py-2">
+                          <p className="text-xs text-zinc-500">
+                            Limite de coreografias
+                          </p>
+                          <p className="mt-1 text-zinc-100">
+                            {detalheInscricao.escola.limiteCoreografias}
+                          </p>
+                        </div>
+                        <div className="rounded-lg border border-zinc-800 bg-black/20 px-3 py-2">
+                          <p className="text-xs text-zinc-500">
+                            ID da inscrição
+                          </p>
+                          <p className="mt-1 text-zinc-100 break-all">
+                            {detalheInscricao.escola.id}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 rounded-lg border border-zinc-800 bg-black/20 p-3">
+                        <p className="text-xs text-zinc-500 uppercase tracking-[0.12em]">
+                          Profissionais cadastrados
+                        </p>
+
+                        {(detalheInscricao.escola.profissionais?.length ??
+                          0) === 0 ? (
+                          <p className="mt-2 text-sm text-zinc-500">
+                            Nenhum profissional cadastrado.
+                          </p>
+                        ) : (
+                          <div className="mt-2 space-y-2">
+                            {detalheInscricao.escola.profissionais.map(
+                              (profissional: any) => (
+                                <div
+                                  key={profissional.id}
+                                  className="rounded-md border border-zinc-800 bg-zinc-900/60 px-3 py-2 flex items-center justify-between gap-3"
+                                >
+                                  <div>
+                                    <p className="text-sm text-zinc-100">
+                                      {profissional.nome}
+                                    </p>
+                                    <p className="text-xs text-zinc-500">
+                                      {profissional.funcao === "COREOGRAFO"
+                                        ? "Coreógrafo(a)"
+                                        : "Assistente"}
+                                    </p>
+                                  </div>
+                                  {profissional.ehExtra && (
+                                    <span className="rounded-full border border-orange-300/35 bg-orange-500/10 px-2 py-0.5 text-[11px] text-orange-100">
+                                      Extra (R$ 70,00)
+                                    </span>
+                                  )}
+                                </div>
+                              ),
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </section>
+                  ) : (
+                    <section className="rounded-xl border border-zinc-800 bg-zinc-900/45 p-4">
+                      <h3 className="text-xs uppercase tracking-[0.14em] text-zinc-400">
+                        Dados da inscrição independente
+                      </h3>
+
+                      <div className="mt-3 grid sm:grid-cols-2 gap-2 text-sm">
+                        <div className="rounded-lg border border-zinc-800 bg-black/20 px-3 py-2">
+                          <p className="text-xs text-zinc-500">Responsável</p>
+                          <p className="mt-1 text-zinc-100">
+                            {detalheInscricao?.independente?.nomeResponsavel}
+                          </p>
+                        </div>
+                        <div className="rounded-lg border border-zinc-800 bg-black/20 px-3 py-2">
+                          <p className="text-xs text-zinc-500">E-mail</p>
+                          <p className="mt-1 text-zinc-100">
+                            {detalheInscricao?.independente?.email}
+                          </p>
+                        </div>
+                        <div className="rounded-lg border border-zinc-800 bg-black/20 px-3 py-2">
+                          <p className="text-xs text-zinc-500">WhatsApp</p>
+                          <p className="mt-1 text-zinc-100">
+                            {detalheInscricao?.independente?.whatsapp}
+                          </p>
+                        </div>
+                        <div className="rounded-lg border border-zinc-800 bg-black/20 px-3 py-2">
+                          <p className="text-xs text-zinc-500">
+                            Limite de coreografias
+                          </p>
+                          <p className="mt-1 text-zinc-100">
+                            {detalheInscricao?.independente?.limiteCoreografias}
+                          </p>
+                        </div>
+                      </div>
+                    </section>
+                  )}
+
                   <section className="rounded-xl border border-zinc-800 bg-zinc-900/45 p-4">
                     <h3 className="text-xs uppercase tracking-[0.14em] text-zinc-400">
                       Elenco
@@ -409,26 +713,104 @@ export default function Admin() {
                       <div className="mt-3 space-y-2">
                         {detalheInscricao.detalhamento.coreografias.map(
                           (coreografia: any) => (
-                            <div
+                            <details
                               key={coreografia.id}
-                              className="rounded-lg border border-zinc-800 bg-black/20 px-3 py-3"
+                              className="group rounded-lg border border-zinc-800 bg-black/20"
                             >
-                              <div className="flex items-start justify-between gap-3">
-                                <div>
-                                  <p className="text-zinc-100 font-medium">
-                                    {coreografia.nome}
-                                  </p>
-                                  <p className="mt-1 text-xs text-zinc-500">
-                                    {coreografia.formacao} •{" "}
-                                    {coreografia.modalidade} •{" "}
-                                    {coreografia.bailarinos} bailarinos
-                                  </p>
+                              <summary className="list-none cursor-pointer px-3 py-3">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-zinc-100 font-medium">
+                                      {coreografia.nome}
+                                    </p>
+                                    <p className="mt-1 text-xs text-zinc-500">
+                                      {coreografia.formacao} •{" "}
+                                      {coreografia.modalidade} •{" "}
+                                      {coreografia.bailarinos} bailarinos
+                                    </p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-xs text-orange-200 font-medium">
+                                      {formatarMoeda(coreografia.valor)}
+                                    </p>
+                                    <ChevronDown
+                                      size={14}
+                                      className="text-zinc-400 transition-transform group-open:rotate-180"
+                                    />
+                                  </div>
                                 </div>
-                                <p className="text-xs text-orange-200 font-medium">
-                                  {formatarMoeda(coreografia.valor)}
-                                </p>
+                              </summary>
+
+                              <div className="border-t border-zinc-800 px-3 py-3 space-y-3">
+                                <div className="grid sm:grid-cols-2 gap-2 text-xs">
+                                  <div className="rounded-md border border-zinc-800 bg-zinc-900/60 px-2.5 py-2">
+                                    <p className="text-zinc-500">
+                                      Coreógrafo(a)
+                                    </p>
+                                    <p className="mt-1 text-zinc-100">
+                                      {coreografia.nomeCoreografo}
+                                    </p>
+                                  </div>
+                                  <div className="rounded-md border border-zinc-800 bg-zinc-900/60 px-2.5 py-2">
+                                    <p className="text-zinc-500">Categoria</p>
+                                    <p className="mt-1 text-zinc-100">
+                                      {coreografia.categoria}
+                                    </p>
+                                  </div>
+                                  <div className="rounded-md border border-zinc-800 bg-zinc-900/60 px-2.5 py-2">
+                                    <p className="text-zinc-500">Duração</p>
+                                    <p className="mt-1 text-zinc-100">
+                                      {coreografia.duracao}
+                                    </p>
+                                  </div>
+                                  <div className="rounded-md border border-zinc-800 bg-zinc-900/60 px-2.5 py-2">
+                                    <p className="text-zinc-500">Cenário</p>
+                                    <p className="mt-1 text-zinc-100">
+                                      {coreografia.temCenario ? "Sim" : "Não"}
+                                    </p>
+                                  </div>
+                                  <div className="rounded-md border border-zinc-800 bg-zinc-900/60 px-2.5 py-2 sm:col-span-2">
+                                    <p className="text-zinc-500">Música</p>
+                                    <p className="mt-1 text-zinc-100 break-all">
+                                      {coreografia.musica}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500 mb-2">
+                                    Elenco da coreografia
+                                  </p>
+                                  {(coreografia.listaBailarinos?.length ??
+                                    0) === 0 ? (
+                                    <p className="text-xs text-zinc-500">
+                                      Sem bailarinos vinculados.
+                                    </p>
+                                  ) : (
+                                    <div className="grid sm:grid-cols-2 gap-2">
+                                      {coreografia.listaBailarinos.map(
+                                        (bailarino: any) => (
+                                          <div
+                                            key={bailarino.id}
+                                            className="rounded-md border border-zinc-800 bg-zinc-900/60 px-2.5 py-2"
+                                          >
+                                            <p className="text-xs text-zinc-100">
+                                              {bailarino.nomeArtistico ||
+                                                bailarino.nomeCompleto}
+                                            </p>
+                                            {bailarino.nomeArtistico && (
+                                              <p className="text-[11px] text-zinc-500">
+                                                {bailarino.nomeCompleto}
+                                              </p>
+                                            )}
+                                          </div>
+                                        ),
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                            </div>
+                            </details>
                           ),
                         )}
                       </div>
@@ -476,6 +858,56 @@ export default function Admin() {
               )}
             </div>
           </aside>
+        </div>
+      )}
+
+      {inscricaoParaExcluir && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center px-4">
+          <button
+            onClick={fecharModalExclusao}
+            className="absolute inset-0 bg-black/70"
+            aria-label="Fechar confirmação de exclusão"
+          />
+
+          <div className="relative w-full max-w-lg rounded-2xl border border-zinc-700 bg-zinc-950 p-5 shadow-2xl">
+            <div className="flex items-start gap-3">
+              <div>
+                <h3 className="text-lg font-semibold text-white">
+                  TEM CERTEZA DISSO?
+                </h3>
+                <p className="mt-1 text-sm text-zinc-300">
+                  Esta ação excluirá a inscrição e todos os dados vinculados:
+                  elenco, profissionais e coreografias.
+                </p>
+                <p className="mt-2 text-sm text-orange-200">
+                  Inscrição:{" "}
+                  <span className="font-medium">
+                    {inscricaoParaExcluir.nome}
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 flex justify-end gap-2">
+              {erroExclusao && (
+                <p className="mr-auto text-sm text-red-300">{erroExclusao}</p>
+              )}
+              <button
+                onClick={fecharModalExclusao}
+                disabled={Boolean(excluindoId)}
+                className="rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-800 disabled:opacity-60"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmarExclusao}
+                disabled={Boolean(excluindoId)}
+                className="rounded-lg border border-red-300/35 bg-red-500/15 px-4 py-2 text-sm text-red-100 hover:bg-red-500/25 disabled:opacity-60"
+              >
+                {excluindoId ? "Excluindo..." : "Sim, excluir inscrição"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </main>

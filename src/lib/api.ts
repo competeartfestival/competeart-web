@@ -215,3 +215,24 @@ export async function buscarEscolaAdmin(id: string) {
 
   return response.json();
 }
+
+export async function excluirInscricaoAdmin(id: string) {
+  const token = localStorage.getItem("admin-token");
+
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/escolas/${id}`, {
+    method: "DELETE",
+    headers: {
+      "x-admin-key": token || "",
+    },
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem("admin-token");
+    window.location.href = "/admin/login";
+    return;
+  }
+
+  if (!response.ok) {
+    throw new Error("Erro ao excluir inscrição");
+  }
+}
