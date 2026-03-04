@@ -324,6 +324,13 @@ export default function Admin() {
           </select>
         </div>
 
+        <p className="mb-3 text-sm text-zinc-400">
+          Quantidade de inscrições:{" "}
+          <span className="text-zinc-100 font-medium">
+            {inscricoesFiltradasOrdenadas.length}
+          </span>
+        </p>
+
         {carregandoLista ? (
           <p className="text-sm text-zinc-400">Carregando inscrições...</p>
         ) : (
