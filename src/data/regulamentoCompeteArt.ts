@@ -22,12 +22,12 @@ export const REGULAMENTO_COMPETE_ART = {
   HORARIOS: {
     ESTRUTURA: "O festival será realizado em dois blocos competitivos.",
     BLOCO_MANHA: {
-      COMPETICAO: "9h00 às 13h30",
-      PREMIACAO: "13h30 às 14h00",
+      COMPETICAO: "Sem atraso, das 9h00 às 14h00",
+      PREMIACAO: "das 14h00 às 14h30",
     },
     BLOCO_TARDE: {
-      COMPETICAO: "14h00 às 18h30",
-      PREMIACAO: "18h30 às 19h00",
+      COMPETICAO: "das 15h00 às 20h00",
+      PREMIACAO: "das 20h00 às 21h00",
     },
   },
   MODALIDADES: [
@@ -38,7 +38,6 @@ export const REGULAMENTO_COMPETE_ART = {
     "Danças Urbanas",
     "Sapateado",
     "Estilo Livre",
-    "Outros estilos poderão ser incluídos a critério da organização",
   ],
   CATEGORIAS_ETARIAS: {
     Baby: "3 a 5 anos",
@@ -64,7 +63,7 @@ export const REGULAMENTO_COMPETE_ART = {
   },
   MUSICA: {
     FORMATO_E_ENVIO:
-      "Enviar obrigatoriamente em formato MP3 até a data limite estipulada pelo festival.",
+      "Enviar obrigatoriamente em formato MP3 até o dia 24 de abril no e-mail competeartfestival@gmail.com.",
     RECOMENDACAO: "Recomenda-se levar uma cópia em pen drive.",
     MULTA:
       "Caso a escola não envie a música dentro do prazo estabelecido, será aplicada uma multa de R$ 70,00 por coreografia.",
@@ -76,6 +75,7 @@ export const REGULAMENTO_COMPETE_ART = {
       "Proibido o uso de fogo, água ou outros líquidos, talco, areia, confete, animais e similares.",
     RESPONSABILIDADE:
       "A escola é responsável por eventuais danos causados ao palco ou equipamentos.",
+    MEDIDAS_DO_PALCO: "12x9m",
   },
   AVALIACAO: {
     CRITERIOS: ["Técnica", "Expressão cênica e presença", "Criatividade / composição coreográfica", "Musicalidade"],
@@ -197,9 +197,12 @@ export const REGULAMENTO_COMPETE_ART = {
     CUSTO_ADICIONAL: "A partir do 3º profissional: R$ 70 por pessoa.",
   },
   INGRESSOS: {
-    ANTECIPADO: "R$ 50 (site)",
-    BILHETERIA: "R$ 65 (no dia)",
-    MEIA_ENTRADA: "Será concedida conforme a legislação vigente.",
+    ACESSO_INGRESSO_ANTECIPADO:
+      "Quem adquiriu ingresso antecipado pelo site deverá apresentar QR Code e documento de identificação na entrada.",
+    ANTECIPADO: "R$ 50,00 (site)",
+    BILHETERIA: "R$ 70,00 (no dia do evento)",
+    MEIA_ENTRADA:
+      "Disponível somente na bilheteria, conforme a legislação vigente, mediante apresentação de documento comprobatório.",
     ACESSOS_BAILARINOS: "Bailarinos inscritos tem acesso a plateia.",
   },
   ORGANIZACAO: {
@@ -255,6 +258,8 @@ export const REGULAMENTO_COMPETE_ART = {
     CUSTOS: "Transporte, hospedagem e alimentação são de responsabilidade dos participantes.",
     USO_DE_IMAGEM:
       "Ao participar, os inscritos autorizam o uso de fotos e vídeos para fins de divulgação do festival.",
+    REGISTRO_DE_IMAGEM_DO_EVENTO:
+      "É terminantemente proibido fotografar ou filmar o festival com o uso de equipamentos semiprofissionais ou profissionais. A cobertura oficial será realizada pelo Ballet em Foco Studio Fotográfico, com fotos e vídeos comercializados durante o festival.",
     ACEITE_DO_REGULAMENTO_INSCRICAO:
       "A inscrição implica total concordância com as normas aqui estabelecidas.",
     ELEMENTOS_CENICOS_PROIBIDOS: [

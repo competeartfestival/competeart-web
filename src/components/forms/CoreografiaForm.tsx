@@ -330,7 +330,6 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Propried
                 <option value="DANCAS_URBANAS">Danças Urbanas</option>
                 <option value="SAPATEADO">Sapateado</option>
                 <option value="ESTILO_LIVRE">Estilo Livre</option>
-                <option value="OUTROS">Outros</option>
               </select>
               {errosFormulario.modalidade && (
                 <p className="text-xs text-red-400 mt-1">{errosFormulario.modalidade}</p>

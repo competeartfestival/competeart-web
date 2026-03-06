@@ -18,6 +18,9 @@ const MAPA_ROTULOS_COMPLETOS: Record<string, string> = {
   RESPONSABILIDADE_MEDICA: "Responsabilidade Médica",
   DATA_E_HORA: "Data e Hora",
   O_QUE_E: "O que é",
+  MEDIDAS_DO_PALCO: "Medidas do Palco",
+  ACESSO_INGRESSO_ANTECIPADO: "Acesso com Ingresso Antecipado",
+  REGISTRO_DE_IMAGEM_DO_EVENTO: "Registro de Imagem do Evento",
 };
 
 const MAPA_PALAVRAS: Record<string, string> = {

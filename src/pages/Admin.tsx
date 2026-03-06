@@ -33,7 +33,12 @@ type InscricaoAdmin = {
 type BailarinoResumo = {
   id: string;
   nomeCompleto: string;
-  nomeArtistico?: string;
+  nomeArtistico: string;
+  cpf: string;
+  dataNascimento: string;
+  escolaId?: string | null;
+  independenteId?: string | null;
+  criadoEm: string;
 };
 
 export default function Admin() {
@@ -77,6 +82,21 @@ export default function Admin() {
       hour: "2-digit",
       minute: "2-digit",
     }).format(new Date(dataIso));
+  }
+
+  function formatarDataSomente(dataIso: string) {
+    return new Intl.DateTimeFormat("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(new Date(dataIso));
+  }
+
+  function formatarCpf(cpf: string) {
+    const numeros = cpf.replace(/\D/g, "").slice(0, 11);
+    if (numeros.length !== 11) return cpf;
+
+    return `${numeros.slice(0, 3)}.${numeros.slice(3, 6)}.${numeros.slice(6, 9)}-${numeros.slice(9, 11)}`;
   }
 
   useEffect(() => {
@@ -686,21 +706,46 @@ export default function Admin() {
                         Nenhum bailarino cadastrado.
                       </p>
                     ) : (
-                      <div className="mt-3 grid sm:grid-cols-2 gap-2">
+                      <div className="mt-3 space-y-2">
                         {elencoCompleto.map((bailarino) => (
                           <div
                             key={bailarino.id}
-                            className="rounded-lg border border-zinc-800 bg-black/20 px-3 py-2"
+                            className="rounded-lg border border-zinc-800 bg-black/20 px-3 py-3"
                           >
-                            <p className="text-zinc-100 font-medium">
-                              {bailarino.nomeArtistico ||
-                                bailarino.nomeCompleto}
-                            </p>
-                            {bailarino.nomeArtistico && (
-                              <p className="text-xs text-zinc-500">
-                                {bailarino.nomeCompleto}
-                              </p>
-                            )}
+                            <div className="grid sm:grid-cols-2 gap-2 text-xs">
+                              <div className="rounded-md border border-zinc-800 bg-zinc-900/60 px-2.5 py-2">
+                                <p className="text-zinc-500">Nome artístico</p>
+                                <p className="mt-1 text-zinc-100">{bailarino.nomeArtistico}</p>
+                              </div>
+                              <div className="rounded-md border border-zinc-800 bg-zinc-900/60 px-2.5 py-2">
+                                <p className="text-zinc-500">Nome completo</p>
+                                <p className="mt-1 text-zinc-100">{bailarino.nomeCompleto}</p>
+                              </div>
+                              <div className="rounded-md border border-zinc-800 bg-zinc-900/60 px-2.5 py-2">
+                                <p className="text-zinc-500">CPF</p>
+                                <p className="mt-1 text-zinc-100">{formatarCpf(bailarino.cpf)}</p>
+                              </div>
+                              <div className="rounded-md border border-zinc-800 bg-zinc-900/60 px-2.5 py-2">
+                                <p className="text-zinc-500">Data de nascimento</p>
+                                <p className="mt-1 text-zinc-100">
+                                  {formatarDataSomente(bailarino.dataNascimento)}
+                                </p>
+                              </div>
+                              <div className="rounded-md border border-zinc-800 bg-zinc-900/60 px-2.5 py-2">
+                                <p className="text-zinc-500">Vínculo</p>
+                                <p className="mt-1 text-zinc-100">
+                                  {bailarino.escolaId ? "Escola" : "Independente"}
+                                </p>
+                              </div>
+                              <div className="rounded-md border border-zinc-800 bg-zinc-900/60 px-2.5 py-2">
+                                <p className="text-zinc-500">Cadastrado em</p>
+                                <p className="mt-1 text-zinc-100">{formatarData(bailarino.criadoEm)}</p>
+                              </div>
+                              <div className="rounded-md border border-zinc-800 bg-zinc-900/60 px-2.5 py-2 sm:col-span-2">
+                                <p className="text-zinc-500">ID do bailarino</p>
+                                <p className="mt-1 text-zinc-100 break-all">{bailarino.id}</p>
+                              </div>
+                            </div>
                           </div>
                         ))}
                       </div>
