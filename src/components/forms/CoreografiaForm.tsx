@@ -5,6 +5,8 @@ import {
   criarCoreografiaIndependente,
   listarBailarinos,
   listarBailarinosIndependente,
+  obterResumo,
+  obterResumoIndependente,
 } from "../../lib/api";
 
 type DadosCoreografia = {
@@ -74,15 +76,70 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Propried
   const [errosFormulario, setErrosFormulario] = useState<ErrosFormulario>({});
   const [erroGeral, setErroGeral] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [limiteCoreografias, setLimiteCoreografias] = useState(0);
+  const [coreografiasCadastradas, setCoreografiasCadastradas] = useState(0);
+  const [mensagemFluxo, setMensagemFluxo] = useState<string | null>(null);
+  const [carregandoProgresso, setCarregandoProgresso] = useState(true);
 
   useEffect(() => {
-    const carregamento =
-      tipoInscricao === "escola"
-        ? listarBailarinos(inscricaoId)
-        : listarBailarinosIndependente(inscricaoId);
+    async function carregarDados() {
+      try {
+        const carregamentoBailarinos =
+          tipoInscricao === "escola"
+            ? listarBailarinos(inscricaoId)
+            : listarBailarinosIndependente(inscricaoId);
 
-    carregamento.then(setBailarinos);
+        const carregamentoResumo =
+          tipoInscricao === "escola"
+            ? obterResumo(inscricaoId)
+            : obterResumoIndependente(inscricaoId);
+
+        const [listaBailarinos, dadosResumo] = await Promise.all([
+          carregamentoBailarinos,
+          carregamentoResumo,
+        ]);
+
+        setBailarinos(listaBailarinos);
+        setCoreografiasCadastradas(dadosResumo.totais.coreografias);
+
+        if (tipoInscricao === "escola") {
+          setLimiteCoreografias(dadosResumo.escola.limiteCoreografias);
+        } else {
+          setLimiteCoreografias(dadosResumo.independente.limiteCoreografias);
+        }
+      } finally {
+        setCarregandoProgresso(false);
+      }
+    }
+
+    carregarDados();
   }, [inscricaoId, tipoInscricao]);
+
+  const faltamCoreografias = Math.max(0, limiteCoreografias - coreografiasCadastradas);
+
+  function irParaConfirmacao() {
+    if (tipoInscricao === "escola") {
+      navegar(`/inscricao/${inscricaoId}/resumo`);
+      return;
+    }
+
+    navegar(`/independentes/${inscricaoId}/resumo`);
+  }
+
+  function limparFormulario() {
+    setDadosFormulario({
+      nome: "",
+      nomeCoreografo: "",
+      formacao: "",
+      modalidade: "",
+      categoria: "",
+      duracao: "",
+      musica: "",
+      temCenario: false,
+    });
+    setBailarinosSelecionados([]);
+    setErrosFormulario({});
+  }
 
   function limitePorFormacao(formacao: string) {
     switch (formacao) {
@@ -207,6 +264,14 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Propried
 
     evento.preventDefault();
     setErroGeral(null);
+    setMensagemFluxo(null);
+
+    if (carregandoProgresso) return;
+
+    if (limiteCoreografias > 0 && coreografiasCadastradas >= limiteCoreografias) {
+      irParaConfirmacao();
+      return;
+    }
 
     if (!validarFormulario()) return;
 
@@ -245,11 +310,23 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Propried
 
       if (tipoInscricao === "escola") {
         await criarCoreografia(inscricaoId, payload);
-        navegar(`/inscricao/${inscricaoId}/resumo`);
       } else {
         await criarCoreografiaIndependente(inscricaoId, payload);
-        navegar(`/independentes/${inscricaoId}/resumo`);
       }
+
+      const novoTotal = coreografiasCadastradas + 1;
+      const restante = Math.max(0, limiteCoreografias - novoTotal);
+      setCoreografiasCadastradas(novoTotal);
+
+      if (restante === 0) {
+        irParaConfirmacao();
+        return;
+      }
+
+      limparFormulario();
+      setMensagemFluxo(
+        `Coreografia salva com sucesso. Falta${restante > 1 ? "m" : ""} ${restante} para liberar a confirmação.`,
+      );
     } catch (erro: any) {
       setErroGeral(erro?.message || "Erro ao salvar coreografia.");
     } finally {
@@ -264,6 +341,22 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Propried
 
   return (
     <form onSubmit={enviarFormulario} className="max-w-6xl">
+      <div className="mb-4 rounded-lg border border-orange-300/30 bg-orange-500/10 p-3">
+        <p className="text-xs uppercase tracking-[0.14em] text-orange-200">Regra da etapa</p>
+        <p className="mt-1 text-sm text-white">
+          É necessário cadastrar todas as coreografias para liberar a etapa de confirmação.
+        </p>
+        <p className="mt-1 text-xs text-gray-300">
+          Progresso atual: {coreografiasCadastradas}/{limiteCoreografias || "-"} coreografias.
+        </p>
+      </div>
+
+      {mensagemFluxo && (
+        <div className="p-3 mb-4 rounded bg-emerald-500/10 text-emerald-300 text-sm">
+          {mensagemFluxo}
+        </div>
+      )}
+
       {erroGeral && (
         <div className="p-3 mb-4 rounded bg-red-500/10 text-red-400 text-sm">{erroGeral}</div>
       )}
@@ -402,11 +495,31 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Propried
 
           <button
             type="submit"
-            disabled={enviando}
+            disabled={
+              carregandoProgresso ||
+              enviando ||
+              (limiteCoreografias > 0 && faltamCoreografias === 0)
+            }
             className="px-6 py-3 rounded-lg bg-orange-500 text-black font-medium hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {enviando ? "Concluindo..." : "Salvar Coreografia"}
+            {carregandoProgresso
+              ? "Carregando..."
+              : enviando
+              ? "Concluindo..."
+              : limiteCoreografias > 0 && faltamCoreografias === 0
+                ? "Limite de coreografias atingido"
+                : "Salvar Coreografia"}
           </button>
+
+          {limiteCoreografias > 0 && faltamCoreografias === 0 && (
+            <button
+              type="button"
+              onClick={irParaConfirmacao}
+              className="ml-3 px-6 py-3 rounded-lg border border-orange-300/40 bg-zinc-900 text-orange-200 hover:bg-zinc-800 transition"
+            >
+              Ir para confirmação
+            </button>
+          )}
         </div>
 
         <aside className="bg-zinc-900/70 border border-zinc-800 rounded-xl p-4 md:p-5">
@@ -437,6 +550,9 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Propried
           </p>
 
           <p className="text-sm text-gray-400 mt-2">Lote atual: {obterLoteAtual()}º lote</p>
+          <p className="text-sm text-gray-300 mt-2">
+            Faltam para confirmação: <span className="text-orange-300">{faltamCoreografias}</span>
+          </p>
 
           {valorCalculado > 0 && (
             <div className="mt-4 p-4 rounded bg-zinc-950 border border-zinc-800">

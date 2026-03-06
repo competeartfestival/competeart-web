@@ -56,7 +56,7 @@ export default function ElencoIndependente() {
         { id: "dados", titulo: "Dados" },
         { id: "elenco", titulo: "Elenco" },
         { id: "coreografias", titulo: "Coreografias" },
-        { id: "resumo", titulo: "Resumo" },
+        { id: "resumo", titulo: "Confirmação" },
       ]}
       etapaAtualId="elenco"
     >

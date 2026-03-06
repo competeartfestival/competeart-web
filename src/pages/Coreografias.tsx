@@ -1,17 +1,18 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import CoreografiaForm from "../components/forms/CoreografiaForm";
 import PaginaComVoltar from "../components/layout/PaginaComVoltar";
 
 export default function Coreografias() {
   const { escolaId } = useParams();
   const navegar = useNavigate();
+  const location = useLocation();
 
   if (!escolaId) return null;
 
   return (
     <PaginaComVoltar
       titulo="Cadastro de Coreografias"
-      subtitulo="Preencha os dados técnicos da coreografia e selecione os bailarinos participantes."
+      subtitulo="Cadastre todas as coreografias planejadas. A confirmação da inscrição só será liberada quando atingir o total informado."
       aoVoltar={() => navegar(-1)}
       classeContainer="max-w-6xl"
       etapas={[
@@ -19,10 +20,15 @@ export default function Coreografias() {
         { id: "dados", titulo: "Dados" },
         { id: "elenco", titulo: "Elenco" },
         { id: "coreografias", titulo: "Coreografias" },
-        { id: "resumo", titulo: "Resumo" },
+        { id: "resumo", titulo: "Confirmação" },
       ]}
       etapaAtualId="coreografias"
     >
+      {typeof location.state?.aviso === "string" && (
+        <div className="mb-4 rounded-lg border border-amber-300/30 bg-amber-500/10 p-3 text-sm text-amber-100">
+          {location.state.aviso}
+        </div>
+      )}
       <CoreografiaForm inscricaoId={escolaId} tipoInscricao="escola" />
     </PaginaComVoltar>
   );

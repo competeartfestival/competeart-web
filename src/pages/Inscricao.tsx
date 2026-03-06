@@ -18,7 +18,7 @@ const ETAPAS_CADASTRO = [
       "Informe dados técnicos e selecione o elenco participante em cada apresentação.",
   },
   {
-    titulo: "4. Resumo e confirmação",
+    titulo: "4. Confirmação",
     descricao: "Revise valores e finalize sua confirmação pelo WhatsApp.",
   },
 ];
@@ -36,7 +36,7 @@ export default function Inscricao() {
         { id: "tipo", titulo: "Tipo" },
         { id: "elenco", titulo: "Elenco" },
         { id: "coreografias", titulo: "Coreografias" },
-        { id: "resumo", titulo: "Resumo" },
+        { id: "resumo", titulo: "Confirmação" },
       ]}
       etapaAtualId="tipo"
     >

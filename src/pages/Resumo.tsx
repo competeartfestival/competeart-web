@@ -16,11 +16,33 @@ export default function Resumo() {
     obterResumo(escolaId).then(setResumo);
   }, [escolaId]);
 
+  const faltam =
+    resumo?.escola?.limiteCoreografias != null
+      ? resumo.escola.limiteCoreografias - resumo.totais.coreografias
+      : 0;
+
+  useEffect(() => {
+    if (!resumo) return;
+    if (faltam > 0) {
+      navegar(`/inscricao/${resumo.escola.id}/coreografias`, {
+        replace: true,
+        state: {
+          aviso:
+            "Para chegar na confirmação, é obrigatório cadastrar todas as coreografias.",
+        },
+      });
+    }
+  }, [resumo, faltam, navegar]);
+
   if (!resumo) {
     return <main className="min-h-screen bg-black text-white p-6">Carregando resumo...</main>;
   }
 
-  const faltam = resumo.escola.limiteCoreografias - resumo.totais.coreografias;
+  if (faltam > 0) return null;
+
+  const cadastroCompleto = faltam <= 0;
+  const valorProfissionaisExtras =
+    resumo.valores.profissionaisExtras ?? resumo.valores.assistentesExtras;
   const linkWhatsapp =
     "https://wa.me/5511942410119?text=" +
     encodeURIComponent(
@@ -31,10 +53,16 @@ export default function Resumo() {
         " no festival Compete’Art",
     );
 
+  function irParaCoreografias() {
+    if (avancando) return;
+    setAvancando(true);
+    navegar(`/inscricao/${resumo.escola.id}/coreografias`);
+  }
+
   return (
     <PaginaComVoltar
-      titulo="Resumo da Inscrição"
-      subtitulo="Revise valores e coreografias antes de confirmar sua inscrição."
+      titulo="Confirmação da Inscrição"
+      subtitulo="Cadastro completo. Confira os valores e finalize sua confirmação pelo WhatsApp."
       aoVoltar={() => navegar(-1)}
       classeContainer="max-w-6xl"
       etapas={[
@@ -42,7 +70,7 @@ export default function Resumo() {
         { id: "dados", titulo: "Dados" },
         { id: "elenco", titulo: "Elenco" },
         { id: "coreografias", titulo: "Coreografias" },
-        { id: "resumo", titulo: "Resumo" },
+        { id: "resumo", titulo: "Confirmação" },
       ]}
       etapaAtualId="resumo"
     >
@@ -64,26 +92,32 @@ export default function Resumo() {
                 </li>
               ))}
             </ul>
-
-            {faltam > 0 && (
-              <button
-                onClick={() => {
-                  if (avancando) return;
-                  setAvancando(true);
-                  navegar(`/inscricao/${resumo.escola.id}/coreografias`);
-                }}
-                disabled={avancando}
-                className="mt-6 w-full px-6 py-3 rounded-lg bg-orange-500 text-black font-medium hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {avancando
-                  ? "Avançando..."
-                  : `Adicionar coreografia (${faltam} restante${faltam > 1 ? "s" : ""})`}
-              </button>
-            )}
           </div>
         </section>
 
         <aside className="bg-zinc-900/70 border border-zinc-800 rounded-xl p-5 h-fit">
+          <div
+            className={`mb-4 rounded-lg border p-3 ${
+              cadastroCompleto
+                ? "border-orange-300/35 bg-orange-500/10"
+                : "border-amber-300/30 bg-amber-500/10"
+            }`}
+          >
+            <p className="text-xs uppercase tracking-[0.14em] text-gray-300">
+              {cadastroCompleto ? "Passo final obrigatório" : "Próximo passo obrigatório"}
+            </p>
+            <p className="mt-2 text-sm font-semibold text-white">
+              {cadastroCompleto
+                ? "Quase lá! Falta confirmar no WhatsApp."
+                : `Faltam ${faltam} coreografia${faltam > 1 ? "s" : ""} para concluir.`}
+            </p>
+            <p className="mt-1 text-xs text-gray-200 leading-relaxed">
+              {cadastroCompleto
+                ? "Para finalizar sua inscrição, clique no botão abaixo e envie a mensagem de confirmação no WhatsApp."
+                : "Complete o cadastro das coreografias para liberar a confirmação final no WhatsApp."}
+            </p>
+          </div>
+
           <h2 className="font-secondary font-semibold mb-3">Totais</h2>
 
           <div className="flex justify-between text-sm mb-2">
@@ -92,7 +126,7 @@ export default function Resumo() {
           </div>
           <div className="flex justify-between text-sm">
             <span>Profissionais extras</span>
-            <span>R$ {resumo.valores.profissionaisExtras ?? resumo.valores.assistentesExtras}</span>
+            <span>R$ {valorProfissionaisExtras}</span>
           </div>
 
           <div className="flex justify-between text-lg font-bold mt-4 pt-4 border-t border-zinc-700">
@@ -104,21 +138,38 @@ export default function Resumo() {
             O pagamento será realizado fora da plataforma. Confirme sua inscrição pelo WhatsApp.
           </p>
 
-          <a
-            href={linkWhatsapp}
-            onClick={() => setConfirmando(true)}
-            className="mt-6 w-full px-6 py-3 rounded-lg bg-orange-500 text-black font-medium hover:bg-orange-600 flex justify-center items-center no-underline transition"
-            style={{
-              pointerEvents: confirmando ? "none" : "auto",
-              opacity: confirmando ? 0.6 : 1,
-              cursor: confirmando ? "not-allowed" : "pointer",
-            }}
-          >
-            <span className="font-extralight flex items-center">
-              <img className="w-auto h-5 mr-2" src="/assets/whatsapp.png" />
-              {confirmando ? "Concluindo..." : "Confirmar minha inscrição"}
-            </span>
-          </a>
+          {!cadastroCompleto ? (
+            <button
+              onClick={irParaCoreografias}
+              disabled={avancando}
+              className="mt-6 w-full px-6 py-3 rounded-lg bg-orange-500 text-black font-medium hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {avancando
+                ? "Avançando..."
+                : `Adicionar coreografia (${faltam} restante${faltam > 1 ? "s" : ""})`}
+            </button>
+          ) : (
+            <a
+              href={linkWhatsapp}
+              onClick={() => setConfirmando(true)}
+              className="mt-6 w-full px-6 py-3 rounded-lg bg-orange-500 text-black font-medium hover:bg-orange-600 flex justify-center items-center no-underline transition"
+              style={{
+                pointerEvents: confirmando ? "none" : "auto",
+                opacity: confirmando ? 0.6 : 1,
+                cursor: confirmando ? "not-allowed" : "pointer",
+              }}
+            >
+              <span className="font-extralight flex items-center">
+                <img className="w-auto h-5 mr-2" src="/assets/whatsapp.png" />
+                {confirmando
+                  ? "Concluindo..."
+                  : "Confirmar minha inscrição no WhatsApp"}
+              </span>
+            </a>
+          )}
+          <p className="mt-2 text-xs text-gray-400">
+            Etapa final obrigatória: confirmação da inscrição via WhatsApp.
+          </p>
         </aside>
       </div>
     </PaginaComVoltar>
