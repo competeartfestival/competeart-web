@@ -706,49 +706,58 @@ export default function Admin() {
                         Nenhum bailarino cadastrado.
                       </p>
                     ) : (
-                      <div className="mt-3 space-y-2">
-                        {elencoCompleto.map((bailarino) => (
-                          <div
-                            key={bailarino.id}
-                            className="rounded-lg border border-zinc-800 bg-black/20 px-3 py-3"
-                          >
-                            <div className="grid sm:grid-cols-2 gap-2 text-xs">
-                              <div className="rounded-md border border-zinc-800 bg-zinc-900/60 px-2.5 py-2">
-                                <p className="text-zinc-500">Nome artístico</p>
-                                <p className="mt-1 text-zinc-100">{bailarino.nomeArtistico}</p>
-                              </div>
-                              <div className="rounded-md border border-zinc-800 bg-zinc-900/60 px-2.5 py-2">
-                                <p className="text-zinc-500">Nome completo</p>
-                                <p className="mt-1 text-zinc-100">{bailarino.nomeCompleto}</p>
-                              </div>
-                              <div className="rounded-md border border-zinc-800 bg-zinc-900/60 px-2.5 py-2">
-                                <p className="text-zinc-500">CPF</p>
-                                <p className="mt-1 text-zinc-100">{formatarCpf(bailarino.cpf)}</p>
-                              </div>
-                              <div className="rounded-md border border-zinc-800 bg-zinc-900/60 px-2.5 py-2">
-                                <p className="text-zinc-500">Data de nascimento</p>
-                                <p className="mt-1 text-zinc-100">
-                                  {formatarDataSomente(bailarino.dataNascimento)}
+                      <>
+                        <div className="mt-3 hidden md:block overflow-hidden rounded-lg border border-zinc-800 bg-black/20">
+                          <table className="w-full text-xs">
+                            <thead className="bg-zinc-900/70 text-zinc-400">
+                              <tr className="border-b border-zinc-800">
+                                <th className="px-3 py-2 text-left font-medium">Nome artístico</th>
+                                <th className="px-3 py-2 text-left font-medium">Nome completo</th>
+                                <th className="px-3 py-2 text-left font-medium">CPF</th>
+                                <th className="px-3 py-2 text-left font-medium">Nascimento</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {elencoCompleto.map((bailarino) => (
+                                <tr
+                                  key={bailarino.id}
+                                  className="border-b border-zinc-800/70 last:border-b-0 text-zinc-200"
+                                >
+                                  <td className="px-3 py-2.5">{bailarino.nomeArtistico}</td>
+                                  <td className="px-3 py-2.5">{bailarino.nomeCompleto}</td>
+                                  <td className="px-3 py-2.5">{formatarCpf(bailarino.cpf)}</td>
+                                  <td className="px-3 py-2.5">
+                                    {formatarDataSomente(bailarino.dataNascimento)}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div className="mt-3 space-y-2 md:hidden">
+                          {elencoCompleto.map((bailarino) => (
+                            <div
+                              key={bailarino.id}
+                              className="rounded-lg border border-zinc-800 bg-black/20 px-3 py-3"
+                            >
+                              <p className="text-sm text-zinc-100 font-medium">
+                                {bailarino.nomeArtistico}
+                              </p>
+                              {bailarino.nomeCompleto !== bailarino.nomeArtistico && (
+                                <p className="mt-1 text-xs text-zinc-400">
+                                  {bailarino.nomeCompleto}
                                 </p>
-                              </div>
-                              <div className="rounded-md border border-zinc-800 bg-zinc-900/60 px-2.5 py-2">
-                                <p className="text-zinc-500">Vínculo</p>
-                                <p className="mt-1 text-zinc-100">
-                                  {bailarino.escolaId ? "Escola" : "Independente"}
-                                </p>
-                              </div>
-                              <div className="rounded-md border border-zinc-800 bg-zinc-900/60 px-2.5 py-2">
-                                <p className="text-zinc-500">Cadastrado em</p>
-                                <p className="mt-1 text-zinc-100">{formatarData(bailarino.criadoEm)}</p>
-                              </div>
-                              <div className="rounded-md border border-zinc-800 bg-zinc-900/60 px-2.5 py-2 sm:col-span-2">
-                                <p className="text-zinc-500">ID do bailarino</p>
-                                <p className="mt-1 text-zinc-100 break-all">{bailarino.id}</p>
+                              )}
+                              <div className="mt-2 flex items-center gap-2 text-xs text-zinc-300">
+                                <span>{formatarCpf(bailarino.cpf)}</span>
+                                <span className="text-zinc-600">•</span>
+                                <span>{formatarDataSomente(bailarino.dataNascimento)}</span>
                               </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
+                          ))}
+                        </div>
+                      </>
                     )}
                   </section>
 
