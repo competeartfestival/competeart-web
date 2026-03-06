@@ -116,6 +116,14 @@ export default function Admin() {
     return 3;
   }
 
+  function obterStatusEfetivo(inscricao: InscricaoAdmin): InscricaoAdmin["status"] {
+    if (inscricao.bailarinosCadastrados === 0) return "FALTA_ELENCO";
+    if (inscricao.coreografiasCadastradas < inscricao.limiteCoreografias) {
+      return "FALTA_COREOGRAFIA";
+    }
+    return "COMPLETO";
+  }
+
   function obterTextoStatus(status: InscricaoAdmin["status"]) {
     return status === "COMPLETO" ? "Completo" : "Pendente";
   }
@@ -254,10 +262,11 @@ export default function Admin() {
     const termo = termoBusca.trim().toLowerCase();
 
     const filtradas = inscricoes.filter((inscricao) => {
+      const statusEfetivo = obterStatusEfetivo(inscricao);
       const bateBusca =
         termo.length === 0 || inscricao.nome.toLowerCase().includes(termo);
       const bateStatus =
-        filtroStatus === "TODOS" || inscricao.status === filtroStatus;
+        filtroStatus === "TODOS" || statusEfetivo === filtroStatus;
 
       return bateBusca && bateStatus;
     });
@@ -371,9 +380,8 @@ export default function Admin() {
 
               <tbody>
                 {inscricoesFiltradasOrdenadas.map((inscricao) => {
-                  const etapasConcluidas = obterEtapasConcluidas(
-                    inscricao.status,
-                  );
+                  const statusEfetivo = obterStatusEfetivo(inscricao);
+                  const etapasConcluidas = obterEtapasConcluidas(statusEfetivo);
                   const percentual = (etapasConcluidas / 3) * 100;
 
                   return (
@@ -428,13 +436,13 @@ export default function Admin() {
                       <td className="px-4 py-3.5">
                         <span
                           className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${obterClasseStatus(
-                            inscricao.status,
+                            statusEfetivo,
                           )}`}
                         >
-                          {obterTextoStatus(inscricao.status)}
+                          {obterTextoStatus(statusEfetivo)}
                         </span>
                         <p className="mt-1 text-xs text-zinc-400">
-                          {obterDetalheStatus(inscricao.status)}
+                          {obterDetalheStatus(statusEfetivo)}
                         </p>
                       </td>
 
