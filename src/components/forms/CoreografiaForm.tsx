@@ -422,6 +422,7 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Propried
                 <option value="CONTEMPORANEO">Contemporâneo</option>
                 <option value="DANCAS_URBANAS">Danças Urbanas</option>
                 <option value="SAPATEADO">Sapateado</option>
+                <option value="DANCA_POPULAR_BRASILEIRA">Dança popular brasileira</option>
                 <option value="ESTILO_LIVRE">Estilo Livre</option>
               </select>
               {errosFormulario.modalidade && (
@@ -446,6 +447,7 @@ export default function CoreografiaForm({ inscricaoId, tipoInscricao }: Propried
                 <option value="ADULTO_INICIANTE">Adulto Iniciante</option>
                 <option value="SENIOR">Sênior</option>
                 <option value="MASTER">Master</option>
+                <option value="DANCA_INCLUSIVA">Dança Inclusiva</option>
               </select>
               {errosFormulario.categoria && (
                 <p className="text-xs text-red-400 mt-1">{errosFormulario.categoria}</p>
