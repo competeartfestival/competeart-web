@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  ExternalLink,
   FileText,
   Gavel,
   Lock,
   LogOut,
+  MapPin,
   Menu,
   Shield,
   Users,
@@ -12,6 +14,7 @@ import {
   Home,
   PenSquare,
 } from "lucide-react";
+import { abrirRegulamentoEmNovaAba } from "../../lib/regulamento";
 
 type ItemBloqueado = {
   titulo: string;
@@ -33,11 +36,13 @@ function ItemMenuAtivo({
   titulo,
   subtitulo,
   onClick,
+  externo = false,
 }: {
   icone: typeof Shield;
   titulo: string;
   subtitulo: string;
   onClick: () => void;
+  externo?: boolean;
 }) {
   return (
     <button
@@ -51,6 +56,11 @@ function ItemMenuAtivo({
         <span className="block text-sm font-medium text-white">{titulo}</span>
         <span className="block text-xs text-gray-400">{subtitulo}</span>
       </span>
+      {externo && (
+        <span className="ml-auto text-zinc-400">
+          <ExternalLink size={15} />
+        </span>
+      )}
     </button>
   );
 }
@@ -64,6 +74,11 @@ export default function HeaderSite({ className = "", sobreFundo = false }: Heade
     localStorage.removeItem("admin-token");
     setMenuAberto(false);
     navegar("/admin/login");
+  }
+
+  function abrirRegulamento() {
+    setMenuAberto(false);
+    abrirRegulamentoEmNovaAba();
   }
 
   return (
@@ -125,13 +140,20 @@ export default function HeaderSite({ className = "", sobreFundo = false }: Heade
               }}
             />
             <ItemMenuAtivo
+              icone={MapPin}
+              titulo="Localização"
+              subtitulo="Mapa e acesso ao teatro"
+              onClick={() => {
+                setMenuAberto(false);
+                navegar("/localizacao");
+              }}
+            />
+            <ItemMenuAtivo
               icone={FileText}
               titulo="Regulamento"
               subtitulo="Regras oficiais do festival"
-              onClick={() => {
-                setMenuAberto(false);
-                navegar("/regulamento");
-              }}
+              onClick={abrirRegulamento}
+              externo
             />
             <ItemMenuAtivo
               icone={Shield}

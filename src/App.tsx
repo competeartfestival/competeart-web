@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
 import Inscricao from "./pages/Inscricao";
@@ -11,8 +12,17 @@ import AdminLogin from "./pages/AdminLogin";
 import ElencoIndependente from "./pages/ElencoIndependente";
 import CoreografiasIndependente from "./pages/CoreografiasIndependente";
 import ResumoIndependente from "./pages/ResumoIndependente";
-import Regulamento from "./pages/Regulamento";
 import Jurados from "./pages/Jurados";
+import Localizacao from "./pages/Localizacao";
+import { REGULAMENTO_URL } from "./lib/regulamento";
+
+function RedirecionamentoRegulamento() {
+  useEffect(() => {
+    window.location.replace(REGULAMENTO_URL);
+  }, []);
+
+  return <Navigate to="/" replace />;
+}
 
 export default function App() {
   return (
@@ -20,8 +30,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/jurados" element={<Jurados />} />
-        <Route path="/localizacao" element={<Navigate to="/" replace />} />
-        <Route path="/regulamento" element={<Regulamento />} />
+        <Route path="/localizacao" element={<Localizacao />} />
+        <Route path="/regulamento" element={<RedirecionamentoRegulamento />} />
         <Route path="/inscricao" element={<Inscricao />} />
         <Route path="/inscricao/escola" element={<InscricaoEscola />} />
         <Route

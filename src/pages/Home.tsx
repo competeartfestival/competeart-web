@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
+import { CalendarDays, ChevronRight, ExternalLink, MapPin } from "lucide-react";
 import HeaderSite from "../components/layout/HeaderSite";
+import { abrirRegulamentoEmNovaAba } from "../lib/regulamento";
 
 const PALAVRAS_DINAMICAS = ["arte", "movimento", "palco", "competição"];
 
@@ -109,10 +110,11 @@ export default function Home() {
                 <ChevronRight size={18} />
               </button>
               <button
-                onClick={() => navegar("/regulamento")}
-                className="inline-flex items-center justify-center px-8 py-4 rounded-xl border border-zinc-600 bg-zinc-950/50 text-gray-200 hover:border-orange-400/40 hover:text-white transition"
+                onClick={abrirRegulamentoEmNovaAba}
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-zinc-600 bg-zinc-950/50 text-gray-200 hover:border-orange-400/40 hover:text-white transition"
               >
                 Ver regulamento
+                <ExternalLink size={16} />
               </button>
             </div>
           </div>
@@ -120,6 +122,44 @@ export default function Home() {
           <div className="relative">
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-orange-500/10 via-transparent to-pink-500/10 blur-2xl" />
             <div className="relative rounded-3xl border border-zinc-700 bg-zinc-950/70 backdrop-blur-md p-5 md:p-6 shadow-2xl">
+              <div className="mb-4 space-y-3">
+                <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-orange-400/25 bg-orange-500/10 px-4 py-2 text-sm text-orange-100 shadow-[0_10px_30px_rgba(249,115,22,0.08)]">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full border border-orange-300/20 bg-orange-500/15 text-orange-300">
+                    <CalendarDays size={15} />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-orange-200/75">
+                      Data do festival
+                    </p>
+                    <p className="truncate font-medium text-white">05/06/2026</p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => navegar("/localizacao")}
+                  className="group flex w-full items-start gap-3 rounded-2xl border border-zinc-800 bg-black/40 px-4 py-4 text-left transition hover:border-orange-400/35 hover:bg-black/55"
+                >
+                  <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-zinc-700 bg-zinc-900/80 text-orange-300">
+                    <MapPin size={17} />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-gray-400">
+                      Local
+                    </p>
+                    <p className="mt-1 text-sm font-medium leading-relaxed text-white">
+                      Teatro Oficina do Estudante Iguatemi
+                    </p>
+                    <p className="mt-1 text-sm leading-relaxed text-gray-400">
+                      Shopping Iguatemi, Campinas/SP
+                    </p>
+                  </div>
+                  <span className="pt-1 text-xs font-medium text-orange-300 transition group-hover:text-orange-200">
+                    Ver mapa
+                  </span>
+                </button>
+              </div>
+
               <div className="rounded-2xl border border-zinc-800 bg-black/50 p-4 md:p-5">
                 <p className="text-xs uppercase tracking-[0.2em] text-orange-300 mb-3">
                   Destaque Compete'Art

@@ -4,15 +4,15 @@ import { motion } from "framer-motion";
 import HeaderSite from "../components/layout/HeaderSite";
 import FundoFestival from "../components/layout/FundoFestival";
 
-const NOME_LOCAL = "Teatro Municipal José de Castro Mendes";
+const NOME_LOCAL = "Teatro Oficina do Estudante Iguatemi";
 const ENDERECO_COMPLETO =
-  "Rua Conselheiro Gomide, 62 - Vila Industrial (Campinas), Campinas - SP, 13035-320";
+  "Shopping Iguatemi Campinas, Avenida Iguatemi, 777 - Vila Brandina, Campinas - SP";
 
 const URL_MAPA_EMBED =
-  "https://www.google.com/maps?q=Teatro+Municipal+Jos%C3%A9+de+Castro+Mendes,+Rua+Conselheiro+Gomide,+62,+Campinas+-+SP,+13035-320&output=embed";
+  "https://www.google.com/maps?q=Teatro+Oficina+do+Estudante+Iguatemi,+Shopping+Iguatemi+Campinas,+Avenida+Iguatemi,+777,+Campinas+-+SP&output=embed";
 
 const URL_MAPA_EXTERNO =
-  "https://www.google.com/maps/search/?api=1&query=Teatro+Municipal+Jos%C3%A9+de+Castro+Mendes,+Rua+Conselheiro+Gomide,+62,+Campinas+-+SP,+13035-320";
+  "https://www.google.com/maps/search/?api=1&query=Teatro+Oficina+do+Estudante+Iguatemi,+Shopping+Iguatemi+Campinas,+Avenida+Iguatemi,+777,+Campinas+-+SP";
 
 export default function Localizacao() {
   const [copiado, setCopiado] = useState(false);
@@ -75,7 +75,7 @@ export default function Localizacao() {
             <div className="overflow-hidden rounded-xl border border-zinc-800 bg-black/30 shadow-sm">
               <iframe
                 src={URL_MAPA_EMBED}
-                title="Mapa do Teatro Municipal José de Castro Mendes"
+                title="Mapa do Teatro Oficina do Estudante Iguatemi"
                 className="h-[420px] w-full md:h-[450px]"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
