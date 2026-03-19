@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { obterResumoIndependente } from "../lib/api";
 import PaginaComVoltar from "../components/layout/PaginaComVoltar";
+import { WHATSAPP_CONTATO_WA_ME } from "../lib/whatsapp";
 
 export default function ResumoIndependente() {
   const { independenteId } = useParams();
@@ -42,7 +43,7 @@ export default function ResumoIndependente() {
 
   const cadastroCompleto = faltam <= 0;
   const linkWhatsapp =
-    "https://wa.me/5511942410119?text=" +
+    `https://wa.me/${WHATSAPP_CONTATO_WA_ME}?text=` +
     encodeURIComponent(
       "Olá, represento a inscrição independente de " +
         resumo.independente.nomeResponsavel +

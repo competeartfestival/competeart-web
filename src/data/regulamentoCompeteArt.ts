@@ -1,3 +1,5 @@
+import { WHATSAPP_CONTATO_EXIBICAO } from "../lib/whatsapp";
+
 export const REGULAMENTO_COMPETE_ART = {
   TITULO: "Compete Art FESTIVAL DE DANÇA",
   SUBTITULO: "REGULAMENTO OFICIAL",
@@ -178,7 +180,7 @@ export const REGULAMENTO_COMPETE_ART = {
     FORMA:
       "O pagamento das inscrições deverá ser realizado em conjunto por escola, não sendo permitidos pagamentos individuais por coreografia ou participante.",
     COMPROVANTE_ENVIO:
-      "O comprovante de pagamento deverá ser enviado no momento da inscrição, via WhatsApp (11) 94241-0119.",
+      `O comprovante de pagamento deverá ser enviado no momento da inscrição, via WhatsApp ${WHATSAPP_CONTATO_EXIBICAO}.`,
     FORMAS_ACEITAS: "PIX ou transferência bancária, conforme os dados fornecidos pela organização.",
     DADOS_PIX: "competeartfestival@gmail.com - Sarah Duarte Camargo Santos",
     DADOS_TRANSFERENCIA: {
@@ -293,7 +295,7 @@ export const REGULAMENTO_COMPETE_ART = {
     SITE: "competeartfestival.com.br",
     INSTAGRAM: "@competeartfestival",
     EMAIL: "competeartfestival@gmail.com",
-    WHATSAPP: "(11) 942410119",
+    WHATSAPP: WHATSAPP_CONTATO_EXIBICAO,
     TIKTOK: "@competeartfestival",
   },
 } as const;

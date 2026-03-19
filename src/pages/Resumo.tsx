@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { obterResumo } from "../lib/api";
 import PaginaComVoltar from "../components/layout/PaginaComVoltar";
+import { WHATSAPP_CONTATO_WA_ME } from "../lib/whatsapp";
 
 export default function Resumo() {
   const { escolaId } = useParams();
@@ -44,7 +45,7 @@ export default function Resumo() {
   const valorProfissionaisExtras =
     resumo.valores.profissionaisExtras ?? resumo.valores.assistentesExtras;
   const linkWhatsapp =
-    "https://wa.me/5511942410119?text=" +
+    `https://wa.me/${WHATSAPP_CONTATO_WA_ME}?text=` +
     encodeURIComponent(
       "Olá, represento a escola " +
         resumo.escola.nome +
