@@ -31,8 +31,8 @@ function obterLoteAtual(): 1 | 2 | 3 {
   const hoje = new Date();
   const ano = 2026;
 
-  const fimLote1 = new Date(ano, 2, 26, 23, 59, 59);
-  const fimLote2 = new Date(ano, 3, 2, 23, 59, 59);
+  const fimLote1 = new Date(ano, 3, 10, 23, 59, 59);
+  const fimLote2 = new Date(ano, 3, 30, 23, 59, 59);
 
   if (hoje <= fimLote1) return 1;
   if (hoje <= fimLote2) return 2;

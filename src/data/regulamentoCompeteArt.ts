@@ -161,9 +161,9 @@ export const REGULAMENTO_COMPETE_ART = {
       ],
     },
     CRONOGRAMA_LOTES: {
-      "1_Lote": "de 18 de fevereiro a 26 de março",
-      "2_Lote": "de 27 de março a 02 de abril",
-      "3_Lote": "de 03 de abril a 09 de abril",
+      "1_Lote": "de 18 de fevereiro a 10 de abril",
+      "2_Lote": "de 11 de abril a 30 de abril",
+      "3_Lote": "de 01 de maio a 20 de maio",
     },
     FECHAMENTO_ANTECIPADO:
       "A organização se reserva o direito de encerrar as inscrições antes do prazo final, caso seja atingido o limite máximo de vagas.",
