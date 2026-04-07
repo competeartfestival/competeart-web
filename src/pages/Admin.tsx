@@ -34,7 +34,8 @@ type BailarinoResumo = {
   id: string;
   nomeCompleto: string;
   nomeArtistico: string;
-  cpf: string;
+  tipoDocumento: "CPF" | "RG";
+  documento: string;
   dataNascimento: string;
   escolaId?: string | null;
   independenteId?: string | null;
@@ -92,9 +93,20 @@ export default function Admin() {
     }).format(new Date(dataIso));
   }
 
-  function formatarCpf(cpf: string) {
-    const numeros = cpf.replace(/\D/g, "").slice(0, 11);
-    if (numeros.length !== 11) return cpf;
+  function formatarDocumento(tipoDocumento: "CPF" | "RG", documento: string) {
+    if (tipoDocumento === "RG") {
+      const caracteres = documento.toUpperCase().replace(/[^0-9X]/g, "").slice(0, 9);
+      if (caracteres.length <= 2) return caracteres;
+      if (caracteres.length <= 5) return `${caracteres.slice(0, 2)}.${caracteres.slice(2)}`;
+      if (caracteres.length <= 8) {
+        return `${caracteres.slice(0, 2)}.${caracteres.slice(2, 5)}.${caracteres.slice(5)}`;
+      }
+
+      return `${caracteres.slice(0, 2)}.${caracteres.slice(2, 5)}.${caracteres.slice(5, 8)}-${caracteres.slice(8)}`;
+    }
+
+    const numeros = documento.replace(/\D/g, "").slice(0, 11);
+    if (numeros.length !== 11) return documento;
 
     return `${numeros.slice(0, 3)}.${numeros.slice(3, 6)}.${numeros.slice(6, 9)}-${numeros.slice(9, 11)}`;
   }
@@ -721,7 +733,7 @@ export default function Admin() {
                               <tr className="border-b border-zinc-800">
                                 <th className="px-3 py-2 text-left font-medium">Nome artístico</th>
                                 <th className="px-3 py-2 text-left font-medium">Nome completo</th>
-                                <th className="px-3 py-2 text-left font-medium">CPF</th>
+                                <th className="px-3 py-2 text-left font-medium">Documento</th>
                                 <th className="px-3 py-2 text-left font-medium">Nascimento</th>
                               </tr>
                             </thead>
@@ -733,7 +745,13 @@ export default function Admin() {
                                 >
                                   <td className="px-3 py-2.5">{bailarino.nomeArtistico}</td>
                                   <td className="px-3 py-2.5">{bailarino.nomeCompleto}</td>
-                                  <td className="px-3 py-2.5">{formatarCpf(bailarino.cpf)}</td>
+                                  <td className="px-3 py-2.5">
+                                    {bailarino.tipoDocumento}:{" "}
+                                    {formatarDocumento(
+                                      bailarino.tipoDocumento,
+                                      bailarino.documento,
+                                    )}
+                                  </td>
                                   <td className="px-3 py-2.5">
                                     {formatarDataSomente(bailarino.dataNascimento)}
                                   </td>
@@ -758,7 +776,13 @@ export default function Admin() {
                                 </p>
                               )}
                               <div className="mt-2 flex items-center gap-2 text-xs text-zinc-300">
-                                <span>{formatarCpf(bailarino.cpf)}</span>
+                                <span>
+                                  {bailarino.tipoDocumento}:{" "}
+                                  {formatarDocumento(
+                                    bailarino.tipoDocumento,
+                                    bailarino.documento,
+                                  )}
+                                </span>
                                 <span className="text-zinc-600">•</span>
                                 <span>{formatarDataSomente(bailarino.dataNascimento)}</span>
                               </div>

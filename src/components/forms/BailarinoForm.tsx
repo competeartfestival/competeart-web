@@ -4,7 +4,8 @@ import { criarBailarino, criarBailarinoIndependente } from "../../lib/api";
 type DadosBailarino = {
   nomeCompleto: string;
   nomeArtistico: string;
-  cpf: string;
+  tipoDocumento: "CPF" | "RG";
+  documento: string;
   dataNascimento: string;
 };
 
@@ -22,7 +23,8 @@ export default function BailarinoForm({
   const [dadosFormulario, setDadosFormulario] = useState<DadosBailarino>({
     nomeCompleto: "",
     nomeArtistico: "",
-    cpf: "",
+    tipoDocumento: "CPF",
+    documento: "",
     dataNascimento: "",
   });
   const [erroGeral, setErroGeral] = useState<string | null>(null);
@@ -41,13 +43,40 @@ export default function BailarinoForm({
     return `${numeros.slice(0, 3)}.${numeros.slice(3, 6)}.${numeros.slice(6, 9)}-${numeros.slice(9)}`;
   }
 
-  function alterarCampo(evento: React.ChangeEvent<HTMLInputElement>) {
+  function formatarRg(valor: string) {
+    const caracteres = valor.toUpperCase().replace(/[^0-9X]/g, "").slice(0, 9);
+
+    if (caracteres.length <= 2) return caracteres;
+    if (caracteres.length <= 5) return `${caracteres.slice(0, 2)}.${caracteres.slice(2)}`;
+    if (caracteres.length <= 8) {
+      return `${caracteres.slice(0, 2)}.${caracteres.slice(2, 5)}.${caracteres.slice(5)}`;
+    }
+
+    return `${caracteres.slice(0, 2)}.${caracteres.slice(2, 5)}.${caracteres.slice(5, 8)}-${caracteres.slice(8)}`;
+  }
+
+  function formatarDocumento(tipoDocumento: "CPF" | "RG", valor: string) {
+    return tipoDocumento === "CPF" ? formatarCpf(valor) : formatarRg(valor);
+  }
+
+  function alterarCampo(
+    evento: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) {
     const { name, value } = evento.target;
 
-    if (name === "cpf") {
+    if (name === "tipoDocumento") {
       setDadosFormulario((dadosAtuais) => ({
         ...dadosAtuais,
-        cpf: formatarCpf(value),
+        tipoDocumento: value as "CPF" | "RG",
+        documento: "",
+      }));
+      return;
+    }
+
+    if (name === "documento") {
+      setDadosFormulario((dadosAtuais) => ({
+        ...dadosAtuais,
+        documento: formatarDocumento(dadosAtuais.tipoDocumento, value),
       }));
       return;
     }
@@ -66,7 +95,7 @@ export default function BailarinoForm({
     setErrosCampo({});
 
     const novosErros: Record<string, string> = {};
-    const cpfSemMascara = dadosFormulario.cpf.replace(/\D/g, "");
+    const documentoSemMascara = dadosFormulario.documento.replace(/\D/g, "");
 
     if (!dadosFormulario.nomeCompleto.trim()) {
       novosErros.nomeCompleto = "Informe o nome completo.";
@@ -76,10 +105,18 @@ export default function BailarinoForm({
       novosErros.nomeArtistico = "Informe o nome artístico.";
     }
 
-    if (!dadosFormulario.cpf.trim()) {
-      novosErros.cpf = "Informe o CPF.";
-    } else if (cpfSemMascara.length !== 11) {
-      novosErros.cpf = "CPF inválido.";
+    if (!dadosFormulario.documento.trim()) {
+      novosErros.documento = `Informe o ${dadosFormulario.tipoDocumento}.`;
+    } else if (
+      dadosFormulario.tipoDocumento === "CPF" &&
+      documentoSemMascara.length !== 11
+    ) {
+      novosErros.documento = "CPF inválido.";
+    } else if (
+      dadosFormulario.tipoDocumento === "RG" &&
+      (documentoSemMascara.length < 7 || documentoSemMascara.length > 9)
+    ) {
+      novosErros.documento = "RG inválido.";
     }
 
     if (!dadosFormulario.dataNascimento) {
@@ -95,7 +132,7 @@ export default function BailarinoForm({
       setEnviando(true);
       const payload = {
         ...dadosFormulario,
-        cpf: cpfSemMascara,
+        documento: documentoSemMascara,
       };
 
       const resposta =
@@ -111,7 +148,8 @@ export default function BailarinoForm({
       setDadosFormulario({
         nomeCompleto: "",
         nomeArtistico: "",
-        cpf: "",
+        tipoDocumento: "CPF",
+        documento: "",
         dataNascimento: "",
       });
     } catch {
@@ -156,16 +194,30 @@ export default function BailarinoForm({
           )}
         </div>
 
-        <div>
-          <input
-            name="cpf"
-            type="text"
-            placeholder="CPF"
-            value={dadosFormulario.cpf}
+        <div className="grid grid-cols-[120px_minmax(0,1fr)] gap-3">
+          <select
+            name="tipoDocumento"
+            value={dadosFormulario.tipoDocumento}
             onChange={alterarCampo}
             className="w-full px-4 py-3 rounded-md bg-zinc-900 text-white focus:outline-none"
-          />
-          {errosCampo.cpf && <p className="text-sm text-red-400 mt-1">{errosCampo.cpf}</p>}
+          >
+            <option value="CPF">CPF</option>
+            <option value="RG">RG</option>
+          </select>
+
+          <div>
+            <input
+              name="documento"
+              type="text"
+              placeholder={dadosFormulario.tipoDocumento}
+              value={dadosFormulario.documento}
+              onChange={alterarCampo}
+              className="w-full px-4 py-3 rounded-md bg-zinc-900 text-white focus:outline-none"
+            />
+            {errosCampo.documento && (
+              <p className="text-sm text-red-400 mt-1">{errosCampo.documento}</p>
+            )}
+          </div>
         </div>
 
         <div>

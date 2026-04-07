@@ -37,7 +37,8 @@ export async function criarBailarino(
   dados: {
     nomeCompleto: string;
     nomeArtistico: string;
-    cpf: string;
+    tipoDocumento: "CPF" | "RG";
+    documento: string;
     dataNascimento: string;
   },
 ) {
@@ -61,7 +62,8 @@ export async function criarBailarinoIndependente(
   dados: {
     nomeCompleto: string;
     nomeArtistico: string;
-    cpf: string;
+    tipoDocumento: "CPF" | "RG";
+    documento: string;
     dataNascimento: string;
   },
 ) {
