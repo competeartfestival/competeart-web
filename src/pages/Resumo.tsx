@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Download } from "lucide-react";
 import { obterResumo } from "../lib/api";
 import PaginaComVoltar from "../components/layout/PaginaComVoltar";
 import { WHATSAPP_CONTATO_WA_ME } from "../lib/whatsapp";
+import { gerarResumoPdf } from "../lib/resumoPdf";
 
 export default function Resumo() {
   const { escolaId } = useParams();
@@ -11,6 +13,7 @@ export default function Resumo() {
   const [resumo, setResumo] = useState<any>(null);
   const [confirmando, setConfirmando] = useState(false);
   const [avancando, setAvancando] = useState(false);
+  const [baixandoPdf, setBaixandoPdf] = useState(false);
 
   useEffect(() => {
     if (!escolaId) return;
@@ -58,6 +61,68 @@ export default function Resumo() {
     if (avancando) return;
     setAvancando(true);
     navegar(`/inscricao/${resumo.escola.id}/coreografias`);
+  }
+
+  function baixarPdfResumo() {
+    if (baixandoPdf) return;
+    setBaixandoPdf(true);
+
+    try {
+      gerarResumoPdf({
+        nomeArquivo: `resumo-inscricao-${resumo.escola.nome}.pdf`,
+        titulo: "Resumo da Inscrição",
+        subtitulo: `Escola: ${resumo.escola.nome}`,
+        blocos: [
+          {
+            titulo: "Dados da escola",
+            campos: [
+              { rotulo: "Nome", valor: resumo.escola.nome },
+              { rotulo: "Direção", valor: resumo.escola.nomeDiretor },
+              { rotulo: "E-mail", valor: resumo.escola.email },
+              { rotulo: "WhatsApp", valor: resumo.escola.whatsapp },
+              { rotulo: "Endereço", valor: resumo.escola.endereco },
+              {
+                rotulo: "Limite de coreografias",
+                valor: resumo.escola.limiteCoreografias,
+              },
+            ],
+            listas: [
+              {
+                titulo: "Profissionais cadastrados",
+                itens:
+                  resumo.escola.profissionais?.map((profissional: any) => {
+                    const funcao =
+                      profissional.funcao === "COREOGRAFO"
+                        ? "Coreógrafo(a)"
+                        : "Assistente";
+                    return `${profissional.nome} • ${funcao}${
+                      profissional.ehExtra ? " • Extra" : ""
+                    }`;
+                  }) ?? [],
+              },
+            ],
+          },
+          {
+            titulo: "Coreografias",
+            listas: [
+              {
+                titulo: "Coreografias cadastradas",
+                itens: resumo.detalhamento.coreografias.map((coreografia: any) => {
+                  return `${coreografia.nome} • ${coreografia.formacao} • ${coreografia.categoria} • ${coreografia.duracao} • ${coreografia.bailarinos} bailarinos • R$ ${coreografia.valor},00`;
+                }),
+              },
+            ],
+          },
+        ],
+        totais: {
+          coreografias: resumo.valores.coreografias,
+          profissionaisExtras: valorProfissionaisExtras,
+          total: resumo.valores.total,
+        },
+      });
+    } finally {
+      setBaixandoPdf(false);
+    }
   }
 
   return (
@@ -138,6 +203,15 @@ export default function Resumo() {
           <p className="text-sm text-gray-400 mt-6">
             O pagamento será realizado fora da plataforma. Confirme sua inscrição pelo WhatsApp.
           </p>
+
+          <button
+            onClick={baixarPdfResumo}
+            disabled={baixandoPdf}
+            className="mt-4 w-full px-6 py-3 rounded-lg border border-zinc-700 bg-zinc-950 text-zinc-100 font-medium hover:border-orange-300/45 hover:text-white disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            <Download size={16} />
+            {baixandoPdf ? "Gerando PDF..." : "Baixar PDF do resumo"}
+          </button>
 
           {!cadastroCompleto ? (
             <button

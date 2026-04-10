@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Download } from "lucide-react";
 import { obterResumoIndependente } from "../lib/api";
 import PaginaComVoltar from "../components/layout/PaginaComVoltar";
 import { WHATSAPP_CONTATO_WA_ME } from "../lib/whatsapp";
+import { gerarResumoPdf } from "../lib/resumoPdf";
 
 export default function ResumoIndependente() {
   const { independenteId } = useParams();
@@ -11,6 +13,7 @@ export default function ResumoIndependente() {
   const [resumo, setResumo] = useState<any>(null);
   const [avancando, setAvancando] = useState(false);
   const [confirmando, setConfirmando] = useState(false);
+  const [baixandoPdf, setBaixandoPdf] = useState(false);
 
   useEffect(() => {
     if (!independenteId) return;
@@ -56,6 +59,50 @@ export default function ResumoIndependente() {
     if (avancando) return;
     setAvancando(true);
     navegar(`/independentes/${resumo.independente.id}/coreografias`);
+  }
+
+  function baixarPdfResumo() {
+    if (baixandoPdf) return;
+    setBaixandoPdf(true);
+
+    try {
+      gerarResumoPdf({
+        nomeArquivo: `resumo-inscricao-${resumo.independente.nomeResponsavel}.pdf`,
+        titulo: "Resumo da Inscrição",
+        subtitulo: `Responsável: ${resumo.independente.nomeResponsavel}`,
+        blocos: [
+          {
+            titulo: "Dados da inscrição",
+            campos: [
+              { rotulo: "Responsável", valor: resumo.independente.nomeResponsavel },
+              { rotulo: "E-mail", valor: resumo.independente.email },
+              { rotulo: "WhatsApp", valor: resumo.independente.whatsapp },
+              {
+                rotulo: "Limite de coreografias",
+                valor: resumo.independente.limiteCoreografias,
+              },
+            ],
+          },
+          {
+            titulo: "Coreografias",
+            listas: [
+              {
+                titulo: "Coreografias cadastradas",
+                itens: resumo.detalhamento.coreografias.map((coreografia: any) => {
+                  return `${coreografia.nome} • ${coreografia.formacao} • ${coreografia.categoria} • ${coreografia.duracao} • ${coreografia.bailarinos} bailarinos • R$ ${coreografia.valor},00`;
+                }),
+              },
+            ],
+          },
+        ],
+        totais: {
+          coreografias: resumo.valores.coreografias,
+          total: resumo.valores.total,
+        },
+      });
+    } finally {
+      setBaixandoPdf(false);
+    }
   }
 
   return (
@@ -132,6 +179,15 @@ export default function ResumoIndependente() {
           <p className="text-sm text-gray-400 mt-6">
             O pagamento será realizado fora da plataforma. Confirme sua inscrição pelo WhatsApp.
           </p>
+
+          <button
+            onClick={baixarPdfResumo}
+            disabled={baixandoPdf}
+            className="mt-4 w-full px-6 py-3 rounded-lg border border-zinc-700 bg-zinc-950 text-zinc-100 font-medium hover:border-orange-300/45 hover:text-white disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            <Download size={16} />
+            {baixandoPdf ? "Gerando PDF..." : "Baixar PDF do resumo"}
+          </button>
 
           {!cadastroCompleto ? (
             <button

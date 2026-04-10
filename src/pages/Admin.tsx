@@ -5,6 +5,7 @@ import {
   Check,
   ChevronDown,
   Copy,
+  Download,
   Trash2,
   X,
 } from "lucide-react";
@@ -17,6 +18,7 @@ import {
 } from "../lib/api";
 import HeaderSite from "../components/layout/HeaderSite";
 import FundoFestival from "../components/layout/FundoFestival";
+import { gerarResumoPdf } from "../lib/resumoPdf";
 
 type InscricaoAdmin = {
   id: string;
@@ -53,6 +55,7 @@ export default function Admin() {
   const [detalheInscricao, setDetalheInscricao] = useState<any>(null);
   const [elencoCompleto, setElencoCompleto] = useState<BailarinoResumo[]>([]);
   const [carregandoPainel, setCarregandoPainel] = useState(false);
+  const [baixandoPdfDetalhe, setBaixandoPdfDetalhe] = useState(false);
   const [inscricaoParaExcluir, setInscricaoParaExcluir] =
     useState<InscricaoAdmin | null>(null);
   const [excluindoId, setExcluindoId] = useState<string | null>(null);
@@ -216,6 +219,103 @@ export default function Admin() {
     setDetalheInscricao(null);
     setElencoCompleto([]);
     setCarregandoPainel(false);
+  }
+
+  function baixarPdfDetalhe() {
+    if (!detalheInscricao || baixandoPdfDetalhe) return;
+    setBaixandoPdfDetalhe(true);
+
+    try {
+      const ehEscola = Boolean(detalheInscricao.escola);
+      const cadastro = ehEscola ? detalheInscricao.escola : detalheInscricao.independente;
+      const tituloCadastro = ehEscola
+        ? detalheInscricao.escola.nome
+        : detalheInscricao.independente.nomeResponsavel;
+
+      gerarResumoPdf({
+        nomeArquivo: `resumo-admin-${tituloCadastro}.pdf`,
+        titulo: "Resumo da Inscrição",
+        subtitulo: tituloCadastro,
+        blocos: [
+          {
+            titulo: ehEscola ? "Dados da escola" : "Dados da inscrição independente",
+            campos: ehEscola
+              ? [
+                  { rotulo: "Nome", valor: cadastro.nome },
+                  { rotulo: "E-mail", valor: cadastro.email },
+                  { rotulo: "WhatsApp", valor: cadastro.whatsapp },
+                  { rotulo: "Direção", valor: cadastro.nomeDiretor },
+                  { rotulo: "Endereço", valor: cadastro.endereco },
+                  {
+                    rotulo: "Limite de coreografias",
+                    valor: cadastro.limiteCoreografias,
+                  },
+                ]
+              : [
+                  { rotulo: "Responsável", valor: cadastro.nomeResponsavel },
+                  { rotulo: "E-mail", valor: cadastro.email },
+                  { rotulo: "WhatsApp", valor: cadastro.whatsapp },
+                  {
+                    rotulo: "Limite de coreografias",
+                    valor: cadastro.limiteCoreografias,
+                  },
+                ],
+            listas: ehEscola
+              ? [
+                  {
+                    titulo: "Profissionais cadastrados",
+                    itens:
+                      cadastro.profissionais?.map((profissional: any) => {
+                        const funcao =
+                          profissional.funcao === "COREOGRAFO"
+                            ? "Coreógrafo(a)"
+                            : "Assistente";
+                        return `${profissional.nome} • ${funcao}${
+                          profissional.ehExtra ? " • Extra" : ""
+                        }`;
+                      }) ?? [],
+                  },
+                ]
+              : undefined,
+          },
+          {
+            titulo: "Elenco",
+            listas: [
+              {
+                titulo: "Bailarinos cadastrados",
+                itens: elencoCompleto.map((bailarino) => {
+                  return `${bailarino.nomeArtistico} • ${bailarino.nomeCompleto} • ${
+                    bailarino.tipoDocumento
+                  } ${formatarDocumento(
+                    bailarino.tipoDocumento,
+                    bailarino.documento,
+                  )} • ${formatarDataSomente(bailarino.dataNascimento)}`;
+                }),
+              },
+            ],
+          },
+          {
+            titulo: "Coreografias",
+            listas: [
+              {
+                titulo: "Coreografias cadastradas",
+                itens:
+                  detalheInscricao.detalhamento.coreografias?.map((coreografia: any) => {
+                    return `${coreografia.nome} • ${coreografia.formacao} • ${coreografia.modalidade} • ${coreografia.categoria} • ${coreografia.duracao} • ${coreografia.bailarinos} bailarinos • ${formatarMoeda(coreografia.valor)}`;
+                  }) ?? [],
+              },
+            ],
+          },
+        ],
+        totais: {
+          coreografias: valorCoreografiasDetalhe,
+          profissionaisExtras: valorProfissionaisExtrasDetalhe,
+          total: valorTotalDetalhe,
+        },
+      });
+    } finally {
+      setBaixandoPdfDetalhe(false);
+    }
   }
 
   function abrirModalExclusao(inscricao: InscricaoAdmin, evento?: MouseEvent) {
@@ -548,12 +648,22 @@ export default function Admin() {
                   </p>
                 </div>
 
-                <button
-                  onClick={fecharPainel}
-                  className="h-9 w-9 rounded-full border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white"
-                >
-                  <X size={15} className="mx-auto" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={baixarPdfDetalhe}
+                    disabled={carregandoPainel || baixandoPdfDetalhe}
+                    className="inline-flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs text-zinc-200 hover:border-orange-300/45 disabled:opacity-60"
+                  >
+                    <Download size={14} />
+                    {baixandoPdfDetalhe ? "Gerando..." : "Baixar PDF"}
+                  </button>
+                  <button
+                    onClick={fecharPainel}
+                    className="h-9 w-9 rounded-full border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white"
+                  >
+                    <X size={15} className="mx-auto" />
+                  </button>
+                </div>
               </div>
             </div>
 
