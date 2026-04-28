@@ -2,7 +2,7 @@
   {
     "id": "johnny-almeida",
     "nome": "Johnny Almeida",
-    "foto": "assets/johnny-almeida.jpg",
+    "foto": "assets/johnny.png",
     "bio": "Johnny Almeida construiu sua trajetória na dança a partir de uma atuação consistente como bailarino, professor e coreógrafo, desenvolvendo um trabalho que une técnica, presença cênica e formação artística. Ao longo dos anos, vem contribuindo diretamente para o desenvolvimento de bailarinos em diferentes níveis, atuando tanto na preparação técnica quanto na construção de identidade em cena.\n\nSua experiência em festivais, processos formativos e projetos artísticos permite um olhar que vai além da execução. Johnny avalia com atenção a qualidade do movimento, a coerência coreográfica e, principalmente, a intenção por trás de cada escolha artística. Sua presença na banca traz equilíbrio entre rigor técnico e sensibilidade, reconhecendo não apenas o resultado final, mas todo o caminho que levou até ele.",
     "tags": ["Bailarino", "Professor", "Coreógrafo", "Formação artística"]
   },
@@ -16,7 +16,7 @@
   {
     "id": "edson-santos",
     "nome": "Édson Santos",
-    "foto": "assets/edson-santos.jpg",
+    "foto": "assets/edson.png",
     "bio": "Édson Santos possui uma trajetória consolidada na dança, atuando há anos como bailarino, professor e coreógrafo. Sua experiência prática em sala de aula, palco e processos criativos contribui para uma visão ampla e fundamentada sobre o desenvolvimento artístico de bailarinos.\n\nAo longo de sua carreira, tem se dedicado à formação técnica e artística, trabalhando diretamente na construção de base, consciência corporal e qualidade de movimento. Sua atuação em festivais e eventos fortalece sua presença como avaliador criterioso, capaz de identificar não apenas aspectos técnicos, mas também a evolução e o potencial de cada participante.\n\nNa banca, Édson traz um olhar equilibrado entre exigência técnica e compreensão do processo, valorizando o desenvolvimento contínuo e a entrega em cena.",
     "tags": ["Bailarino", "Professor", "Coreógrafo", "Formação técnica"]
   },
@@ -30,7 +30,7 @@
   {
     "id": "fran-manson",
     "nome": "Fran Manson",
-    "foto": "assets/fran-manson.jpg",
+    "foto": "assets/fran.png",
     "bio": "Fran Manson atua na dança com uma abordagem contemporânea, explorando movimento, expressão e construção de linguagem artística. Sua trajetória como intérprete e criadora é marcada por uma investigação constante sobre o corpo em cena e suas possibilidades.\n\nCom experiência em projetos e processos criativos, desenvolve trabalhos que transitam entre técnica e expressão, valorizando a autenticidade e a identidade de cada proposta. Sua atuação contribui para um olhar sensível às nuances da dança contemporânea e às transformações do cenário atual.\n\nNa banca, Fran traz uma perspectiva atual e artística, atenta à originalidade, à intenção e à forma como cada coreografia se comunica com o público, ampliando o olhar sobre o que é apresentado no palco.",
     "tags": ["Contemporâneo", "Intérprete", "Criadora", "Expressão"]
   },

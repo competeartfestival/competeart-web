@@ -167,8 +167,7 @@ function CartaoJurado({ jurado, aoSelecionar }: { jurado: Jurado; aoSelecionar: 
       </div>
 
       <div className="p-3 md:p-4">
-        <h3 className="text-white font-semibold text-sm md:text-base line-clamp-2">{jurado.nome}</h3>
-        <div className="mt-2 flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5">
           {jurado.tags.slice(0, 2).map((tag) => (
             <span
               key={tag}
